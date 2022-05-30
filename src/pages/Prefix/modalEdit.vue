@@ -51,8 +51,8 @@
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item label="注意事项">
-				<el-input v-model="record.note" />
+			<el-form-item label="备注">
+				<el-input v-model="record.note" type="textarea" autosize />
 			</el-form-item>
 		</el-form>
 		<template #footer>
@@ -143,7 +143,7 @@ defineExpose({
 	visible,
 })
 </script>
-<style lang="less" scope>
+<style lang="less" scoped>
 .demo-record {
 	height: 50vh;
 	overflow: auto;

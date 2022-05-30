@@ -3,8 +3,11 @@
 		<li :class="{ cur: curTitle === '首页' }">
 			<router-link to="/">首页</router-link>
 		</li>
-		<li :class="{ cur: curTitle === '字典' }">
+		<!-- <li :class="{ cur: curTitle === '字典' }">
 			<router-link to="/dict">字典</router-link>
+		</li> -->
+		<li :class="{ cur: curTitle === '分类' }">
+			<router-link to="/category">分类</router-link>
 		</li>
 		<li :class="{ cur: curTitle === '词根' }">
 			<router-link to="/wordroot">词根</router-link>
@@ -34,6 +37,7 @@ const route = useRoute()
 const routeTitleMap = new Map([
 	['/home', '首页'],
 	['/dict', '字典'],
+	['/category', '分类'],
 	['/wordroot', '词根'],
 	['/prefix', '前缀'],
 	['/suffix', '后缀'],

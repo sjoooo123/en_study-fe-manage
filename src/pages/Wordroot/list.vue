@@ -78,7 +78,7 @@
 				}}</span>
 			</template>
 		</el-table-column>
-		<el-table-column prop="note" label="注意事项" />
+		<el-table-column prop="note" label="备注" />
 		<el-table-column fixed="right" label="操作" width="180">
 			<template #default="scope">
 				<el-button
@@ -236,7 +236,7 @@ const handleDelete = (index: number, row: Wordroot) => {
 
 // 5、生命周期
 watch(
-	() => store.state.category.category,
+	() => store.state.category.category.list,
 	(n, _o) => {
 		categoryWordroot.value = n.filter(
 			(item: categoryType) => item.type === 'wordroot'

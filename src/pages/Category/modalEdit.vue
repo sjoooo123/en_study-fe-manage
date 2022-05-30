@@ -1,5 +1,5 @@
 <!--
-字典-弹窗新增或编辑
+弹窗新增或编辑
 1、布局
   表单
 2、业务逻辑
@@ -24,39 +24,15 @@
 			label-width="120px"
 			class="demo-record"
 		>
-			<el-form-item label="词跟" prop="wordroot">
-				<el-input v-model="record.wordroot" />
+			<el-form-item label="分类名称" prop="name">
+				<el-input v-model="record.name" />
 			</el-form-item>
-			<el-form-item label="英语释义">
-				<el-input v-model="record.mean" />
+			<el-form-item label="排序码" prop="sort">
+				<el-input-number v-model="record.sort" :min="-999" :max="999" />
 			</el-form-item>
-			<el-form-item label="词义">
-				<el-input
-					v-model="record.translation"
-					type="textarea"
-					autosize
-				/>
-			</el-form-item>
-			<el-form-item label="示例">
-				<el-input v-model="record.example" type="textarea" autosize />
-			</el-form-item>
-			<el-form-item label="所属分类">
-				<el-select
-					v-model="record.category"
-					placeholder="请选择"
-					style="width: 100%"
-				>
-					<el-option
-						v-for="item in category"
-						:key="item.id"
-						:label="item.name"
-						:value="item.id"
-					/>
-				</el-select>
-			</el-form-item>
-			<el-form-item label="备注">
+			<!-- <el-form-item label="备注">
 				<el-input v-model="record.note" type="textarea" autosize />
-			</el-form-item>
+			</el-form-item> -->
 		</el-form>
 		<template #footer>
 			<span class="dialog-footer">
@@ -73,29 +49,26 @@
 // -2、引用
 import { ref, reactive } from 'vue'
 import { ElMessage, FormInstance } from 'element-plus'
-import { WordrootService } from '../../api/wordroot' // 引入接口
-import type { Wordroot } from './list.vue'
+import { CategoryService } from '../../api/category' // 引入接口
 import { categoryType } from '../../api/category'
 
 // -1、类型
 interface Props {
-	category: categoryType[]
-	record: Wordroot // 表单项数据
+	record: categoryType // 表单项数据
 	type: string // 表单类型
+	recordType: string // 记录的类型,词根，前缀或后缀
 }
 
 // 0、父组件相关
 const emit = defineEmits(['fresh']) // 声明触发事件
 const props = withDefaults(defineProps<Props>(), {
-	category: [],
 	type: '',
+	recordType: '',
 	record: {
-		wordroot: '',
-		mean: '',
-		translation: '',
-		example: '',
-		category: '',
-		note: '',
+		pid: 0,
+		name: '',
+		type: '',
+		sort: 0,
 	},
 })
 
@@ -103,15 +76,15 @@ const props = withDefaults(defineProps<Props>(), {
 const visible = ref(false)
 const ruleFormRef = ref<FormInstance>()
 const rules = reactive({
-	wordroot: [{ required: true, message: '词根必填', trigger: 'blur' }],
+	name: [{ required: true, message: '名称必填', trigger: 'blur' }],
+	sort: [{ required: true, message: '排序码必填', trigger: 'blur' }],
 })
 
 // 2、辅助方法
-
 // 3、异步
 const excuteAddOrEdit = async () => {
 	const serviceFun =
-		props.type === 'add' ? WordrootService.add : WordrootService.edit
+		props.type === 'add' ? CategoryService.add : CategoryService.edit
 	const successMes = props.type === 'add' ? '新增成功！' : '修改成功！'
 
 	const res = await serviceFun(props.record)
@@ -150,7 +123,7 @@ defineExpose({
 </script>
 <style lang="less" scoped>
 .demo-record {
-	height: 50vh;
+	// height: 50vh;
 	overflow: auto;
 }
 </style>

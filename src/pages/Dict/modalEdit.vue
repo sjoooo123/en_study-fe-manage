@@ -161,7 +161,7 @@ defineExpose({
 	visible,
 })
 </script>
-<style lang="less" scope>
+<style lang="less" scoped>
 .demo-record {
 	height: 50vh;
 	overflow: auto;
