@@ -1,4 +1,4 @@
-import { CategoryService } from '../../api/category' // 引入接口
+import { CategoryService, categoryType } from '../../api/category' // 引入接口
 import { flatData } from '../../common'
 
 const state = {
@@ -14,6 +14,20 @@ const state = {
 		async getCategory({ commit }) {
 			const res = await CategoryService.query()
 			if (res.data.fail) return
+
+			// 给树添加title
+			const addTitleToTreeList = (list: categoryType[]) => {
+				list.forEach((item: categoryType) => {
+					item.title = item.note
+						? item.name + '__：' + item.note
+						: item.name
+					if (item.children && item.children.length) {
+						addTitleToTreeList(item.children)
+					}
+				})
+			}
+
+			addTitleToTreeList(res.data.result)
 
 			// 数据扁平化处理
 			const platResult: any[] = []

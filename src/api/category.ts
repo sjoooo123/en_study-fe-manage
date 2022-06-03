@@ -12,5 +12,7 @@ export interface categoryType {
 	pid?: number
 	type?: string // 类型，词根、前缀、后缀
 	sort?: number // 排序码
+	note?: string // 备注
+	title?: string // 树显示的信息
 	children?: categoryType[]
 }

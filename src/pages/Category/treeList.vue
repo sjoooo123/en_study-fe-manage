@@ -33,7 +33,7 @@
 		:expand-on-click-node="false"
 		:filter-node-method="filterNode"
 		:props="{
-			label: 'name',
+			label: 'title',
 		}"
 		draggable
 		@node-drop="handleDrop"
@@ -122,6 +122,7 @@ const handleAdd = () => {
 			type: props.type,
 			name: '',
 			sort: 0,
+			note: '',
 		}
 	}
 

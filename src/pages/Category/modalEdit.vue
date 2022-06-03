@@ -30,9 +30,9 @@
 			<el-form-item label="排序码" prop="sort">
 				<el-input-number v-model="record.sort" :min="-999" :max="999" />
 			</el-form-item>
-			<!-- <el-form-item label="备注">
+			<el-form-item label="备注">
 				<el-input v-model="record.note" type="textarea" autosize />
-			</el-form-item> -->
+			</el-form-item>
 		</el-form>
 		<template #footer>
 			<span class="dialog-footer">
@@ -69,6 +69,7 @@ const props = withDefaults(defineProps<Props>(), {
 		name: '',
 		type: '',
 		sort: 0,
+		note: '',
 	},
 })
 
