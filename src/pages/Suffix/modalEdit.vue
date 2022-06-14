@@ -34,9 +34,6 @@
 					autosize
 				/>
 			</el-form-item>
-			<el-form-item label="类型">
-				<el-input v-model="record.type" />
-			</el-form-item>
 			<el-form-item label="示例">
 				<el-input v-model="record.example" type="textarea" autosize />
 			</el-form-item>
@@ -93,7 +90,6 @@ const props = withDefaults(defineProps<Props>(), {
 		affix: '',
 		translation: '',
 		example: '',
-		type: '',
 		category: '',
 		note: '',
 	},

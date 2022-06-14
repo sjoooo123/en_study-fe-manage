@@ -55,7 +55,6 @@
 		<el-table-column prop="affix" label="词缀" width="120" />
 		<el-table-column prop="translation" label="词义" />
 		<el-table-column prop="example" label="示例" />
-		<el-table-column prop="type" label="类型" />
 		<el-table-column
 			prop="category"
 			label="所属分类"
@@ -132,7 +131,6 @@ export interface Suffix {
 	affix: string
 	translation?: string
 	example?: string
-	type?: string
 	category?: string
 	note?: string
 }

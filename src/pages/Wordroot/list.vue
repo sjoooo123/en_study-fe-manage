@@ -78,6 +78,21 @@
 				}}</span>
 			</template>
 		</el-table-column>
+		<el-table-column
+			prop="frequency"
+			label="频率"
+			column-key="frequency"
+			:filters="
+				frequencyOptions.map((item) => ({
+					text: item.label,
+					value: item.value,
+				}))
+			"
+		>
+			<template #default="scope">
+				<span>{{ getfrequencyOptionsLabel(scope.row.frequency) }}</span>
+			</template>
+		</el-table-column>
 		<el-table-column prop="note" label="备注" />
 		<el-table-column fixed="right" label="操作" width="180">
 			<template #default="scope">
@@ -130,6 +145,7 @@ import { onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useStore } from 'vuex'
 import { categoryType } from '../../api/category'
+import { frequencyOptions } from '../../utils/options'
 
 // -1、类型
 export interface Wordroot {
@@ -138,6 +154,7 @@ export interface Wordroot {
 	mean?: string
 	translation?: string
 	category?: string
+	frequency?: string
 	note?: string
 }
 
@@ -164,6 +181,10 @@ const getCategoryPrefixOptionsLabel = (value: string) => {
 		(item: categoryType) => item.id === value
 	)
 	return a?.name || ''
+}
+const getfrequencyOptionsLabel = (value: string) => {
+	const a = frequencyOptions.find((item) => item.value === value)
+	return a?.label || ''
 }
 const indexMethod = (index: number) => {
 	return index + 1
