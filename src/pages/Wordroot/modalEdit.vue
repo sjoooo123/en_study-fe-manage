@@ -110,6 +110,7 @@ const props = withDefaults(defineProps<Props>(), {
 		translation: '',
 		example: '',
 		category: '',
+		frequency: '',
 		note: '',
 	},
 })

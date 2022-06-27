@@ -8,6 +8,7 @@
 		"module": "es2015",
 		// 这可以对 `this` 上的数据 property 进行更严格的推断
 		"strict": true,
-		"moduleResolution": "node"
-	}
+		"moduleResolution": "node",
+		"jsx": "react"
+	},
 }

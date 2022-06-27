@@ -51,6 +51,20 @@
 					/>
 				</el-select>
 			</el-form-item>
+			<el-form-item label="频率">
+				<el-select
+					v-model="record.frequency"
+					placeholder="请选择"
+					style="width: 100%"
+				>
+					<el-option
+						v-for="item in frequencyOptions"
+						:key="item.value"
+						:label="item.label"
+						:value="item.value"
+					/>
+				</el-select>
+			</el-form-item>
 			<el-form-item label="备注">
 				<el-input v-model="record.note" type="textarea" autosize />
 			</el-form-item>
@@ -73,6 +87,7 @@ import { ElMessage, FormInstance } from 'element-plus'
 import { PrefixService } from '../../api/prefix' // 引入接口
 import type { Prefix } from './list.vue'
 import { categoryType } from '../../api/category'
+import { frequencyOptions } from '../../utils/options'
 
 // -1、类型
 interface Props {
@@ -91,6 +106,7 @@ const props = withDefaults(defineProps<Props>(), {
 		translation: '',
 		example: '',
 		category: '',
+		frequency: '',
 		note: '',
 	},
 })
