@@ -5,6 +5,7 @@ import Category from '../pages/Category/index.vue'
 import Wordroot from '../pages/Wordroot/list.vue'
 import Prefix from '../pages/Prefix/list.vue'
 import Suffix from '../pages/Suffix/list.vue'
+import Simpleword from '../pages/Simpleword/list.vue'
 
 const routes = [
 	{ path: '/', redirect: '/home' },
@@ -37,6 +38,11 @@ const routes = [
 		path: '/suffix',
 		name: 'suffix',
 		component: Suffix,
+	},
+	{
+		path: '/simpleword',
+		name: 'simpleword',
+		component: Simpleword,
 	},
 ]
 
