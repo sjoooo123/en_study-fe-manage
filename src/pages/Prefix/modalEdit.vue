@@ -35,7 +35,7 @@
                 />
             </el-form-item>
             <el-form-item label="示例">
-                <el-input v-model="record.example" type="textarea" autosize />
+                <FormList :list="record.example" />
             </el-form-item>
             <el-form-item label="所属分类">
                 <el-select
@@ -79,6 +79,20 @@
                     />
                 </el-select>
             </el-form-item>
+            <el-form-item label="完善程度">
+                <el-select
+                    v-model="record.level"
+                    placeholder="请选择"
+                    style="width: 100%"
+                >
+                    <el-option
+                        v-for="item in levelOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                    />
+                </el-select>
+            </el-form-item>
             <el-form-item label="备注">
                 <el-input v-model="record.note" type="textarea" autosize />
             </el-form-item>
@@ -101,8 +115,12 @@ import { ElMessage, FormInstance } from "element-plus";
 import { PrefixService } from "../../api/prefix"; // 引入接口
 import type { Prefix } from "./list.vue";
 import { categoryType } from "../../api/category";
-import { frequencyOptions } from "../../utils/options";
-import { sourceOptions } from "../../utils/options";
+import {
+    frequencyOptions,
+    levelOptions,
+    sourceOptions,
+} from "../../utils/options";
+import FormList from "../../components/FormList.vue";
 
 // -1、类型
 interface Props {
@@ -119,11 +137,12 @@ const props = withDefaults(defineProps<Props>(), {
     record: {
         affix: "",
         translation: "",
-        example: "",
+        example: [],
         category: "",
         frequency: "",
         note: "",
         source: "",
+        level: "",
     },
 });
 
@@ -141,8 +160,18 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? PrefixService.add : PrefixService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
+    // 处理示例
+    if (props.record.example instanceof Array) {
+        props.record.example = JSON.stringify(props.record.example);
+    }
+
     const res = await serviceFun(props.record);
-    if (res.data.fail) return;
+    if (res.data.fail) {
+        if (props.record.example.indexOf("[") === 0) {
+            props.record.example = JSON.parse(props.record.example);
+        }
+        return;
+    }
 
     ElMessage.success(successMes);
     visible.value = false;

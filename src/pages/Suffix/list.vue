@@ -54,7 +54,11 @@
         <el-table-column fixed type="index" :index="indexMethod" />
         <el-table-column prop="affix" label="词缀" width="120" />
         <el-table-column prop="translation" label="词义" />
-        <el-table-column prop="example" label="示例" />
+        <el-table-column prop="example" label="示例">
+            <template #default="scope">
+                <span>{{ getExample(scope.row.example) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="category"
             label="所属分类"
@@ -104,6 +108,21 @@
                 <span>{{
                     getOptionsName(sourceOptions, scope.row.source)
                 }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="level"
+            label="完善程度"
+            column-key="level"
+            :filters="
+                levelOptions.map((item) => ({
+                    text: item.label,
+                    value: item.value,
+                }))
+            "
+        >
+            <template #default="scope">
+                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
             </template>
         </el-table-column>
         <el-table-column prop="note" label="备注" />
@@ -158,9 +177,13 @@ import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
 import { categoryType } from "../../api/category";
-import { frequencyOptions } from "../../utils/options";
-import { sourceOptions } from "../../utils/options";
-import { getOptionsName } from "../../utils/options";
+import {
+    frequencyOptions,
+    sourceOptions,
+    levelOptions,
+    getOptionsName,
+} from "../../utils/options";
+import { getExample } from "../../utils/common";
 
 // -1、类型
 export interface Suffix {
@@ -172,6 +195,7 @@ export interface Suffix {
     frequency?: string;
     note?: string;
     source?: string;
+    level?: string;
 }
 
 // 0、父组件相关
@@ -246,12 +270,37 @@ const handleCurrentChange = (val: number) => {
     queryList();
 };
 const handleAdd = () => {
-    currentRecord.value = { affix: "" };
+    currentRecord.value = {
+        affix: "",
+        translation: "",
+        example: [],
+        category: "",
+        frequency: "",
+        note: "",
+        source: "",
+        level: "",
+    };
     modalType.value = "add";
     editRef.value.visible = true;
 };
 const handleEdit = (index: number, row: Suffix) => {
-    currentRecord.value = { ...row };
+    // 示例
+    currentRecord.value = {
+        ...row,
+        // vary: row.vary?.split(","),
+        example:
+            row.example?.indexOf("[") === 0
+                ? JSON.parse(row.example)
+                : [
+                      {
+                          word: "",
+                          split: row.example,
+                          midmean: "",
+                          translation: "",
+                      },
+                  ],
+    };
+
     modalType.value = "edit";
     editRef.value.visible = true;
 };

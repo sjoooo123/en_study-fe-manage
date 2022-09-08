@@ -58,9 +58,12 @@
     >
         <el-table-column fixed type="index" :index="indexMethod" />
         <el-table-column prop="wordroot" label="词根" width="120" />
-        <el-table-column prop="mean" label="英文释义" />
         <el-table-column prop="translation" label="词义" />
-        <el-table-column prop="example" label="示例" />
+        <el-table-column prop="example" label="示例">
+            <template #default="scope">
+                <span>{{ getExample(scope.row.example) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="category"
             label="所属分类"
@@ -112,6 +115,37 @@
                 }}</span>
             </template>
         </el-table-column>
+        <el-table-column
+            prop="vary"
+            label="音变规律"
+            column-key="vary"
+            :filters="filtersVary"
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.vary"
+                    v-for="item in scope.row.vary.split(',')"
+                    :key="item"
+                    >{{ getOptionsName(filtersVary, item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="level"
+            label="完善程度"
+            column-key="level"
+            :filters="
+                levelOptions.map((item) => ({
+                    text: item.label,
+                    value: item.value,
+                }))
+            "
+        >
+            <template #default="scope">
+                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column prop="note" label="备注" />
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
@@ -160,24 +194,30 @@
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
 import { WordrootService } from "../../api/wordroot"; // 引入接口
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
 import { categoryType } from "../../api/category";
-import { frequencyOptions } from "../../utils/options";
-import { sourceOptions } from "../../utils/options";
-import { getOptionsName } from "../../utils/options";
+import {
+    frequencyOptions,
+    sourceOptions,
+    levelOptions,
+    varyOptions,
+    getOptionsName,
+} from "../../utils/options";
+import { getExample } from "../../utils/common";
 
 // -1、类型
 export interface Wordroot {
     id: string;
     wordroot: string;
-    mean?: string;
     translation?: string;
     category?: string;
     frequency?: string;
     note?: string;
     source?: string;
+    vary?: string;
+    level?: string;
 }
 
 // 0、父组件相关
@@ -196,6 +236,20 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const filters = ref(undefined);
+
+// 计算属性
+const filtersVary = computed(() => {
+    let resultVary = [];
+    varyOptions.forEach((d) => {
+        const optionsArr = d.options.map((item) => ({
+            label: item.label,
+            text: item.label,
+            value: item.value,
+        }));
+        resultVary.push(...optionsArr);
+    });
+    return resultVary;
+});
 
 // 2、辅助方法
 const getCategoryPrefixOptionsLabel = (value: string) => {
@@ -252,12 +306,48 @@ const handleCurrentChange = (val: number) => {
     queryList();
 };
 const handleAdd = () => {
-    currentRecord.value = {};
+    currentRecord.value = {
+        wordroot: "",
+        translation: "",
+        example: [],
+        category: "",
+        frequency: "",
+        note: "",
+        source: "",
+        vary: "",
+        level: "",
+    };
     modalType.value = "add";
     editRef.value.visible = true;
 };
 const handleEdit = (index: number, row: Wordroot) => {
-    currentRecord.value = { ...row };
+    // 示例
+    // row.example = JSON.stringify([
+    //     {
+    //         word: "abolish",
+    //         split: "abol 消除 + ish 使…",
+    //         midmean: "",
+    //         translation: "废除",
+    //     },
+    // ]);
+
+    // 音变，示例
+    currentRecord.value = {
+        ...row,
+        vary: row.vary?.split(","),
+        example:
+            row.example?.indexOf("[") === 0
+                ? JSON.parse(row.example)
+                : [
+                      {
+                          word: "",
+                          split: row.example,
+                          midmean: "",
+                          translation: "",
+                      },
+                  ],
+    };
+
     modalType.value = "edit";
     editRef.value.visible = true;
 };
