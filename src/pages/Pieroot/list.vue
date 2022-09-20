@@ -1,5 +1,5 @@
 <!--
-列表页
+字典-列表页
 1、布局
   操作栏
   表格
@@ -18,7 +18,6 @@
 3、样式
 -->
 <template>
-    <p>后缀决定词性</p>
     <!-- 操作栏 -->
     <div class="table-top-tool">
         精确匹配
@@ -31,7 +30,7 @@
         />
         <el-input
             v-model="input"
-            placeholder="请输入词缀、词义"
+            placeholder="请输入pie词根或词义"
             class="input-with-select"
             @keydown.enter.native="queryList"
         >
@@ -52,34 +51,14 @@
         @filter-change="filterChange"
     >
         <el-table-column fixed type="index" :index="indexMethod" />
-        <el-table-column prop="affix" label="词缀" width="120" />
-        <el-table-column
-            prop="pie"
-            label="所属PIE词根"
-            column-key="pie"
-            :filters="
-                pieroots?.map((item) => ({
-                    text: item.pieroot,
-                    value: item.id,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{ getPieName(scope.row.pie) }}</span>
-            </template>
-        </el-table-column>
+        <el-table-column prop="pieroot" label="词根" width="120" />
         <el-table-column prop="translation" label="词义" />
-        <el-table-column prop="example" label="示例">
-            <template #default="scope">
-                <span>{{ getExample(scope.row.example) }}</span>
-            </template>
-        </el-table-column>
         <el-table-column
             prop="category"
             label="所属分类"
             column-key="category"
             :filters="
-                categorySuffix.map((item) => ({
+                categoryPieroot.map((item) => ({
                     text: item.name,
                     value: item.id,
                 }))
@@ -88,40 +67,6 @@
             <template #default="scope">
                 <span>{{
                     getCategoryPrefixOptionsLabel(scope.row.category)
-                }}</span>
-            </template>
-        </el-table-column>
-        <el-table-column
-            prop="frequency"
-            label="频率"
-            column-key="frequency"
-            :filters="
-                frequencyOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{
-                    getOptionsName(frequencyOptions, scope.row.frequency)
-                }}</span>
-            </template>
-        </el-table-column>
-        <el-table-column
-            prop="source"
-            label="语源"
-            column-key="source"
-            :filters="
-                sourceOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{
-                    getOptionsName(sourceOptions, scope.row.source)
                 }}</span>
             </template>
         </el-table-column>
@@ -141,6 +86,23 @@
             </template>
         </el-table-column>
         <el-table-column prop="note" label="备注" />
+        <el-table-column
+            prop="vary"
+            label="音变规律"
+            column-key="vary"
+            :filters="filtersVary"
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.vary"
+                    v-for="item in scope.row.vary.split(',')"
+                    :key="item"
+                    >{{ getOptionsName(filtersVary, item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column prop="varyDetail" label="音变详情" />
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
                 <el-button
@@ -179,8 +141,7 @@
         :type="modalType"
         :record="currentRecord"
         @fresh="queryList"
-        :category="categorySuffix"
-        :pieroots="pieroots"
+        :category="categoryPieroot"
     />
 </template>
 
@@ -188,9 +149,8 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { SuffixService } from "../../api/suffix"; // 引入接口
 import { PierootService } from "../../api/pieroot"; // 引入接口
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
 import { categoryType } from "../../api/category";
@@ -198,27 +158,25 @@ import {
     frequencyOptions,
     sourceOptions,
     levelOptions,
+    varyOptions,
     getOptionsName,
 } from "../../utils/options";
-import { getExample } from "../../utils/common";
 
 // -1、类型
-export interface Suffix {
+export interface Pieroot {
     id: string;
-    affix: string;
-    pie?: string;
+    pieroot: string;
     translation?: string;
-    example?: string;
     category?: string;
-    frequency?: string;
     note?: string;
-    source?: string;
     level?: string;
+    vary?: string;
+    varyDetail?: string;
 }
 
 // 0、父组件相关
 const store = useStore();
-const categorySuffix = ref([]);
+const categoryPieroot = ref([]);
 
 // 1.、属性
 const loading = ref(false);
@@ -232,33 +190,36 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const filters = ref(undefined);
-const pieroots = ref([]);
+
+// 计算属性
+const filtersVary = computed(() => {
+    let resultVary = [];
+    varyOptions.forEach((d) => {
+        const optionsArr = d.options.map((item) => ({
+            label: item.label,
+            text: item.label,
+            value: item.value,
+        }));
+        resultVary.push(...optionsArr);
+    });
+    return resultVary;
+});
 
 // 2、辅助方法
-const getPieName = (value: string) => {
-    const a = pieroots.value.find((item) => item.id === value);
-    return a?.pieroot || "";
-};
-const indexMethod = (index: number) => {
-    return index + 1;
-};
 const getCategoryPrefixOptionsLabel = (value: string) => {
-    const a = categorySuffix.value.find(
+    const a = categoryPieroot.value.find(
         (item: categoryType) => item.id === value
     );
     return a?.name || "";
 };
+const indexMethod = (index: number) => {
+    return index + 1;
+};
 
 // 3、异步
-const queryPIEAll = async () => {
-    const res = await PierootService.queryAll();
-    if (res.data.fail) return;
-
-    pieroots.value = res.data.result.list;
-};
 const queryList = async () => {
     loading.value = true;
-    const res = await SuffixService.queryList({
+    const res = await PierootService.queryList({
         exact: exact.value,
         keyword: input.value || undefined,
         page: currentPage.value,
@@ -272,7 +233,7 @@ const queryList = async () => {
     total.value = res.data.result.total;
 };
 const excuteDelete = async (id) => {
-    const res = await SuffixService.delete({ id });
+    const res = await PierootService.delete({ id });
     if (res.data.fail) return;
 
     ElMessage.success("删除成功！");
@@ -300,41 +261,24 @@ const handleCurrentChange = (val: number) => {
 };
 const handleAdd = () => {
     currentRecord.value = {
-        affix: "",
-        pie: "",
+        pieroot: "",
         translation: "",
-        example: [],
         category: "",
-        frequency: "",
         note: "",
-        source: "",
         level: "",
     };
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Suffix) => {
-    // 示例
+const handleEdit = (index: number, row: Pieroot) => {
     currentRecord.value = {
         ...row,
-        // vary: row.vary?.split(","),
-        example:
-            row.example?.indexOf("[") === 0
-                ? JSON.parse(row.example)
-                : [
-                      {
-                          word: "",
-                          split: row.example,
-                          midmean: "",
-                          translation: "",
-                      },
-                  ],
     };
 
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Suffix) => {
+const handleDelete = (index: number, row: Pieroot) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",
@@ -350,8 +294,8 @@ const handleDelete = (index: number, row: Suffix) => {
 watch(
     () => store.state.category.category.list,
     (n, _o) => {
-        categorySuffix.value = n.filter(
-            (item: categoryType) => item.type === "suffix"
+        categoryPieroot.value = n.filter(
+            (item: categoryType) => item.type === "pieroot"
         );
     },
     {
@@ -362,7 +306,6 @@ watch(filters, (_n, _o) => {
     queryList();
 });
 onMounted(() => {
-    queryPIEAll();
     queryList();
 });
 

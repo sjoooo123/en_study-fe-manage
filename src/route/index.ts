@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../pages/Home.vue'
 import Dict from '../pages/Dict/list.vue'
 import Category from '../pages/Category/index.vue'
+import Pieroot from '../pages/Pieroot/list.vue'
 import Wordroot from '../pages/Wordroot/list.vue'
 import Prefix from '../pages/Prefix/list.vue'
 import Suffix from '../pages/Suffix/list.vue'
@@ -23,6 +24,11 @@ const routes = [
 		path: '/category',
 		name: 'category',
 		component: Category,
+	},
+	{
+		path: '/pieroot',
+		name: 'pieroot',
+		component: Pieroot,
 	},
 	{
 		path: '/wordroot',

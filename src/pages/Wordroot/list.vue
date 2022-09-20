@@ -58,6 +58,21 @@
     >
         <el-table-column fixed type="index" :index="indexMethod" />
         <el-table-column prop="wordroot" label="词根" width="120" />
+        <el-table-column
+            prop="pie"
+            label="所属PIE词根"
+            column-key="pie"
+            :filters="
+                pieroots?.map((item) => ({
+                    text: item.pieroot,
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <span>{{ getPieName(scope.row.pie) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column prop="translation" label="词义" />
         <el-table-column prop="example" label="示例">
             <template #default="scope">
@@ -115,7 +130,7 @@
                 }}</span>
             </template>
         </el-table-column>
-        <el-table-column
+        <!--<el-table-column
             prop="vary"
             label="音变规律"
             column-key="vary"
@@ -130,7 +145,7 @@
                     >{{ getOptionsName(filtersVary, item) }}</el-tag
                 >
             </template>
-        </el-table-column>
+        </el-table-column>-->
         <el-table-column
             prop="level"
             label="完善程度"
@@ -186,6 +201,7 @@
         :record="currentRecord"
         @fresh="queryList"
         :category="categoryWordroot"
+        :pieroots="pieroots"
     />
 </template>
 
@@ -194,6 +210,7 @@
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
 import { WordrootService } from "../../api/wordroot"; // 引入接口
+import { PierootService } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
@@ -211,6 +228,7 @@ import { getExample } from "../../utils/common";
 export interface Wordroot {
     id: string;
     wordroot: string;
+    pie?: string;
     translation?: string;
     category?: string;
     frequency?: string;
@@ -236,6 +254,7 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const filters = ref(undefined);
+const pieroots = ref([]);
 
 // 计算属性
 const filtersVary = computed(() => {
@@ -252,6 +271,10 @@ const filtersVary = computed(() => {
 });
 
 // 2、辅助方法
+const getPieName = (value: string) => {
+    const a = pieroots.value.find((item) => item.id === value);
+    return a?.pieroot || "";
+};
 const getCategoryPrefixOptionsLabel = (value: string) => {
     const a = categoryWordroot.value.find(
         (item: categoryType) => item.id === value
@@ -263,6 +286,12 @@ const indexMethod = (index: number) => {
 };
 
 // 3、异步
+const queryPIEAll = async () => {
+    const res = await PierootService.queryAll();
+    if (res.data.fail) return;
+
+    pieroots.value = res.data.result.list;
+};
 const queryList = async () => {
     loading.value = true;
     const res = await WordrootService.queryList({
@@ -276,6 +305,7 @@ const queryList = async () => {
     if (res.data.fail) return;
 
     tableData.value = res.data.result.list;
+    console.log(tableData);
     total.value = res.data.result.total;
 };
 const excuteDelete = async (id) => {
@@ -308,6 +338,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         wordroot: "",
+        pie: "",
         translation: "",
         example: [],
         category: "",
@@ -379,6 +410,7 @@ watch(filters, (_n, _o) => {
     queryList();
 });
 onMounted(() => {
+    queryPIEAll();
     queryList();
 });
 

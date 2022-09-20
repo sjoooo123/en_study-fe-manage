@@ -30,23 +30,8 @@
             label-width="120px"
             class="demo-record"
         >
-            <el-form-item label="词跟" prop="wordroot">
-                <el-input v-model="record.wordroot" />
-            </el-form-item>
-            <el-form-item label="所属PIE词根">
-                <el-select
-                    v-model="record.pie"
-                    placeholder="请选择"
-                    style="width: 100%"
-                    filterable
-                >
-                    <el-option
-                        v-for="item in pieroots"
-                        :key="item.id"
-                        :label="item.pieroot"
-                        :value="item.id"
-                    />
-                </el-select>
+            <el-form-item label="词跟" prop="pieroot">
+                <el-input v-model="record.pieroot" />
             </el-form-item>
             <el-form-item label="词义">
                 <el-input
@@ -54,10 +39,6 @@
                     type="textarea"
                     autosize
                 />
-            </el-form-item>
-            <el-form-item label="示例">
-                <!--<el-input v-model="record.example" type="textarea" autosize />-->
-                <FormList :list="record.example" />
             </el-form-item>
             <el-form-item label="所属分类">
                 <el-select
@@ -73,35 +54,24 @@
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="频率">
+            <el-form-item label="完善程度">
                 <el-select
-                    v-model="record.frequency"
+                    v-model="record.level"
                     placeholder="请选择"
                     style="width: 100%"
                 >
                     <el-option
-                        v-for="item in frequencyOptions"
+                        v-for="item in levelOptions"
                         :key="item.value"
                         :label="item.label"
                         :value="item.value"
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="语源">
-                <el-select
-                    v-model="record.source"
-                    placeholder="请选择"
-                    style="width: 100%"
-                >
-                    <el-option
-                        v-for="item in sourceOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                    />
-                </el-select>
+            <el-form-item label="备注">
+                <el-input v-model="record.note" type="textarea" autosize />
             </el-form-item>
-            <!--<el-form-item label="音变规律">
+            <el-form-item label="音变规律">
                 <el-select
                     v-model="record.vary"
                     placeholder="请选择"
@@ -121,23 +91,13 @@
                         />
                     </el-option-group>
                 </el-select>
-            </el-form-item>-->
-            <el-form-item label="完善程度">
-                <el-select
-                    v-model="record.level"
-                    placeholder="请选择"
-                    style="width: 100%"
-                >
-                    <el-option
-                        v-for="item in levelOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                    />
-                </el-select>
             </el-form-item>
-            <el-form-item label="备注">
-                <el-input v-model="record.note" type="textarea" autosize />
+            <el-form-item label="音变详情">
+                <el-input
+                    v-model="record.varyDetail"
+                    type="textarea"
+                    autosize
+                />
             </el-form-item>
         </el-form>
         <template #footer>
@@ -155,8 +115,8 @@
 // -2、引用
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
-import { WordrootService } from "../../api/wordroot"; // 引入接口
-import type { Wordroot } from "./list.vue";
+import { PierootService } from "../../api/pieroot"; // 引入接口
+import type { Pieroot } from "./list.vue";
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
@@ -169,35 +129,19 @@ import FormList from "../../components/FormList.vue";
 // -1、类型
 interface Props {
     category: categoryType[];
-    record: Wordroot; // 表单项数据
+    record: Pieroot; // 表单项数据
     type: string; // 表单类型
-    pieroots: Array; // pie词根列表
 }
 
 // 0、父组件相关
 const emit = defineEmits(["fresh"]); // 声明触发事件
 const props = defineProps<Props>();
-// const props = withDefaults(defineProps<Props>(), {
-//     category: [],
-//     type: "",
-//     record: {
-//         wordroot: "",
-//         translation: "",
-//         example: [],
-//         category: "",
-//         frequency: "",
-//         note: "",
-//         source: "",
-//         vary: "",
-//         level: "0",
-//     },
-// });
 
 // 1、属性
 const visible = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
-    wordroot: [{ required: true, message: "词根必填", trigger: "blur" }],
+    pieroot: [{ required: true, message: "词根必填", trigger: "blur" }],
 });
 
 // 2、辅助方法
@@ -205,25 +149,18 @@ const rules = reactive({
 // 3、异步
 const excuteAddOrEdit = async () => {
     const serviceFun =
-        props.type === "add" ? WordrootService.add : WordrootService.edit;
+        props.type === "add" ? PierootService.add : PierootService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
     // 处理音变规律数组为字符串
     if (props.record.vary instanceof Array) {
         props.record.vary = props.record.vary.join(",");
     }
-    // 处理示例
-    if (props.record.example instanceof Array) {
-        props.record.example = JSON.stringify(props.record.example);
-    }
 
     const res = await serviceFun(props.record);
     if (res.data.fail) {
         if (props.record.vary.length) {
             props.record.vary = props.record.vary.split(",");
-        }
-        if (props.record.example.indexOf("[") === 0) {
-            props.record.example = JSON.parse(props.record.example);
         }
         return;
     }

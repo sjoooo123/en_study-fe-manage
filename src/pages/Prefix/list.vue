@@ -53,6 +53,21 @@
     >
         <el-table-column fixed type="index" :index="indexMethod" />
         <el-table-column prop="affix" label="词缀" width="120" />
+        <el-table-column
+            prop="pie"
+            label="所属PIE词根"
+            column-key="pie"
+            :filters="
+                pieroots?.map((item) => ({
+                    text: item.pieroot,
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <span>{{ getPieName(scope.row.pie) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column prop="translation" label="词义" />
         <el-table-column prop="example" label="示例">
             <template #default="scope">
@@ -165,6 +180,7 @@
         :record="currentRecord"
         @fresh="queryList"
         :category="categoryPrefix"
+        :pieroots="pieroots"
     />
 </template>
 
@@ -173,6 +189,7 @@
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
 import { PrefixService } from "../../api/prefix"; // 引入接口
+import { PierootService } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
@@ -189,6 +206,7 @@ import { getExample } from "../../utils/common";
 export interface Prefix {
     id: string;
     affix: string;
+    pie?: string;
     translation?: string;
     example?: string;
     category?: string;
@@ -214,8 +232,13 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const filters = ref(undefined);
+const pieroots = ref([]);
 
 // 2、辅助方法
+const getPieName = (value: string) => {
+    const a = pieroots.value.find((item) => item.id === value);
+    return a?.pieroot || "";
+};
 const indexMethod = (index: number) => {
     return index + 1;
 };
@@ -227,6 +250,12 @@ const getCategoryPrefixOptionsLabel = (value: number) => {
 };
 
 // 3、异步
+const queryPIEAll = async () => {
+    const res = await PierootService.queryAll();
+    if (res.data.fail) return;
+
+    pieroots.value = res.data.result.list;
+};
 const queryList = async () => {
     loading.value = true;
     const res = await PrefixService.queryList({
@@ -272,6 +301,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         affix: "",
+        pie: "",
         translation: "",
         example: [],
         category: "",
@@ -334,6 +364,7 @@ watch(filters, (_n, _o) => {
     queryList();
 });
 onMounted(() => {
+    queryPIEAll();
     queryList();
 });
 

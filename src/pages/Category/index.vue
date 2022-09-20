@@ -1,30 +1,36 @@
 <template>
-  <el-row :gutter="10">
-    <el-col :span="12">
-      <div class="treeBox">
-        <h4>词根</h4>
-        <TreeList :data="categoryWordroot" type="wordroot" />
-      </div>
-    </el-col>
-    <el-col :span="12">
-      <div class="treeBox">
-        <h4>前缀</h4>
-        <TreeList :data="categoryPrefix" type="prefix" />
-      </div>
-    </el-col>
-    <el-col :span="12">
-      <div class="treeBox">
-        <h4>后缀</h4>
-        <TreeList :data="categorySuffix" type="suffix" />
-      </div>
-    </el-col>
-    <el-col :span="12">
-      <div class="treeBox">
-        <h4>单词</h4>
-        <TreeList :data="categoryWord" type="word" />
-      </div>
-    </el-col>
-  </el-row>
+    <el-row :gutter="10">
+        <el-col :span="12">
+            <div class="treeBox">
+                <h4>pie词根</h4>
+                <TreeList :data="categoryPieroot" type="pieroot" />
+            </div>
+        </el-col>
+        <el-col :span="12">
+            <div class="treeBox">
+                <h4>词根</h4>
+                <TreeList :data="categoryWordroot" type="wordroot" />
+            </div>
+        </el-col>
+        <el-col :span="12">
+            <div class="treeBox">
+                <h4>前缀</h4>
+                <TreeList :data="categoryPrefix" type="prefix" />
+            </div>
+        </el-col>
+        <el-col :span="12">
+            <div class="treeBox">
+                <h4>后缀</h4>
+                <TreeList :data="categorySuffix" type="suffix" />
+            </div>
+        </el-col>
+        <el-col :span="12">
+            <div class="treeBox">
+                <h4>单词</h4>
+                <TreeList :data="categoryWord" type="word" />
+            </div>
+        </el-col>
+    </el-row>
 </template>
 
 <script lang="ts" setup>
@@ -39,6 +45,7 @@ import TreeList from "./treeList.vue";
 const store = useStore();
 
 // 1、属性
+const categoryPieroot = ref([]);
 const categoryWordroot = ref([]);
 const categoryPrefix = ref([]);
 const categorySuffix = ref([]);
@@ -50,22 +57,27 @@ const categoryWord = ref([]);
 
 // 5、生命周期
 watch(
-  () => store.state.category.category.tree,
-  (n, _o) => {
-    categoryWordroot.value = n.filter(
-      (item: categoryType) => item.type === "wordroot"
-    );
-    categoryPrefix.value = n.filter(
-      (item: categoryType) => item.type === "prefix"
-    );
-    categorySuffix.value = n.filter(
-      (item: categoryType) => item.type === "suffix"
-    );
-    categoryWord.value = n.filter((item: categoryType) => item.type === "word");
-  },
-  {
-    immediate: true,
-  }
+    () => store.state.category.category.tree,
+    (n, _o) => {
+        categoryPieroot.value = n.filter(
+            (item: categoryType) => item.type === "pieroot"
+        );
+        categoryWordroot.value = n.filter(
+            (item: categoryType) => item.type === "wordroot"
+        );
+        categoryPrefix.value = n.filter(
+            (item: categoryType) => item.type === "prefix"
+        );
+        categorySuffix.value = n.filter(
+            (item: categoryType) => item.type === "suffix"
+        );
+        categoryWord.value = n.filter(
+            (item: categoryType) => item.type === "word"
+        );
+    },
+    {
+        immediate: true,
+    }
 );
 
 // 6、外部
@@ -73,10 +85,10 @@ watch(
 
 <style lang="less" scoped>
 .treeBox {
-  padding: 20px;
-  border: 1px solid #000;
-  h4 {
-    margin: 0 0 10px 0;
-  }
+    padding: 20px;
+    border: 1px solid #000;
+    h4 {
+        margin: 0 0 10px 0;
+    }
 }
 </style>

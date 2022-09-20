@@ -15,7 +15,13 @@
 3、样式
 -->
 <template>
-    <el-dialog v-model="visible" title="数据项处理" width="50%" draggable>
+    <el-dialog
+        v-model="visible"
+        title="数据项处理"
+        width="50%"
+        draggable
+        :close-on-click-modal="false"
+    >
         <el-form
             ref="ruleFormRef"
             :model="record"
@@ -26,6 +32,21 @@
         >
             <el-form-item label="词缀" prop="affix">
                 <el-input v-model="record.affix" />
+            </el-form-item>
+            <el-form-item label="所属PIE词根">
+                <el-select
+                    v-model="record.pie"
+                    placeholder="请选择"
+                    style="width: 100%"
+                    filterable
+                >
+                    <el-option
+                        v-for="item in pieroots"
+                        :key="item.id"
+                        :label="item.pieroot"
+                        :value="item.id"
+                    />
+                </el-select>
             </el-form-item>
             <el-form-item label="词义">
                 <el-input
@@ -127,24 +148,12 @@ interface Props {
     category: categoryType[];
     record: Prefix; // 表单项数据
     type: string; // 表单类型
+    pieroots: Array; // pie词根列表
 }
 
 // 0、父组件相关
 const emit = defineEmits(["fresh"]); // 声明触发事件
-const props = withDefaults(defineProps<Props>(), {
-    category: [],
-    type: "",
-    record: {
-        affix: "",
-        translation: "",
-        example: [],
-        category: "",
-        frequency: "",
-        note: "",
-        source: "",
-        level: "",
-    },
-});
+const props = defineProps<Props>();
 
 // 1、属性
 const visible = ref(false);
