@@ -273,6 +273,7 @@ const handleAdd = () => {
 const handleEdit = (index: number, row: Pieroot) => {
     currentRecord.value = {
         ...row,
+        vary: row.vary?.split(","),
     };
 
     modalType.value = "edit";

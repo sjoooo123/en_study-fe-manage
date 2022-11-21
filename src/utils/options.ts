@@ -8,10 +8,10 @@ export const frequencyOptions = [
 
 // 语源
 export const sourceOptions = [
-    { label: "法语", value: "F" },
     { label: "希腊语", value: "GK" },
     { label: "拉丁语", value: "L" },
     { label: "日耳曼语", value: "OE" },
+    { label: "其他", value: "其他" },
 ];
 
 // 音变规律
@@ -125,6 +125,42 @@ export const varyOptions = [
 
     // 	]
     // }
+];
+
+// 等级
+export const gradeOptions = [
+    { label: "初中", value: "初中" },
+    { label: "高中", value: "高中" },
+    { label: "CET-4", value: "CET-4" },
+    { label: "CET-6", value: "CET-6" },
+    { label: "考研", value: "考研" },
+    { label: "TEM-4", value: "TEM-4" },
+    { label: "雅思", value: "雅思" },
+    { label: "托福", value: "托福" },
+    { label: "TEM-8", value: "TEM-8" },
+];
+
+// 专业领域
+export const fieldOptions = [
+    { label: "数学", value: 1 },
+    { label: "特许金融分析师（CFA）", value: 2 },
+    { label: "法律", value: 3 },
+    { label: "半导体微电子", value: 4 },
+    { label: "护理", value: 5 },
+    { label: "化学", value: 6 },
+    { label: "畜牧兽医", value: 7 },
+    { label: "传播学", value: 8 },
+    { label: "地理", value: 9 },
+];
+
+// 常用级
+export const commonlevelOptions = [
+    { label: "5", value: "5" },
+    { label: "4", value: "4" },
+    { label: "3", value: "3" },
+    { label: "2", value: "2" },
+    { label: "1", value: "1" },
+    { label: "None", value: "None" },
 ];
 
 // 完善程度

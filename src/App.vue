@@ -21,8 +21,11 @@
         <li :class="{ cur: curTitle === '后缀' }">
             <router-link to="/suffix">后缀</router-link>
         </li>
-        <li :class="{ cur: curTitle === '简单词' }">
-            <router-link to="/simpleword">简单词</router-link>
+        <li :class="{ cur: curTitle === '单词' }">
+            <router-link to="/word">单词</router-link>
+        </li>
+        <li :class="{ cur: curTitle === '专业单词' }">
+            <router-link to="/fieldword">专业单词</router-link>
         </li>
     </ul>
     <p>{{ curTitle }}</p>
@@ -48,6 +51,8 @@ const routeTitleMap = new Map([
     ["/wordroot", "词根"],
     ["/prefix", "前缀"],
     ["/suffix", "后缀"],
+    ["/word", "单词"],
+    ["/fieldword", "单词"],
 ]);
 
 // 2、辅助方法

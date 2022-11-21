@@ -90,10 +90,19 @@
                 }))
             "
         >
-            <template #default="scope">
+            <!--<template #default="scope">
                 <span>{{
                     getCategoryPrefixOptionsLabel(scope.row.category)
                 }}</span>
+            </template> -->
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.category"
+                    v-for="item in scope.row.category.split(',')"
+                    :key="item"
+                    >{{ getCategoryPrefixOptionsLabel(item) }}</el-tag
+                >
             </template>
         </el-table-column>
         <el-table-column
@@ -146,6 +155,21 @@
                 >
             </template>
         </el-table-column>-->
+        <el-table-column
+            prop="grade"
+            label="等级"
+            column-key="grade"
+            :filters="
+                gradeOptions.map((item) => ({
+                    text: item.label,
+                    value: item.value,
+                }))
+            "
+        >
+            <template #default="scope">
+                <span>{{ getOptionsName(gradeOptions, scope.row.grade) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="level"
             label="完善程度"
@@ -219,6 +243,7 @@ import {
     frequencyOptions,
     sourceOptions,
     levelOptions,
+    gradeOptions,
     varyOptions,
     getOptionsName,
 } from "../../utils/options";
@@ -236,6 +261,7 @@ export interface Wordroot {
     source?: string;
     vary?: string;
     level?: string;
+    grade?: string;
 }
 
 // 0、父组件相关
@@ -277,7 +303,7 @@ const getPieName = (value: string) => {
 };
 const getCategoryPrefixOptionsLabel = (value: string) => {
     const a = categoryWordroot.value.find(
-        (item: categoryType) => item.id === value
+        (item: categoryType) => item.id === +value
     );
     return a?.name || "";
 };
@@ -323,6 +349,11 @@ const filterChange = (f: any) => {
         if (f[k].length === 0) {
             f[k] = undefined;
         }
+
+        // grade等级为其他
+        if (k === "grade") {
+            f[k] = f[k].map((item) => (item === "其他" ? null : item));
+        }
     }
 
     filters.value = JSON.stringify(f) === "{}" ? undefined : f;
@@ -366,6 +397,7 @@ const handleEdit = (index: number, row: Wordroot) => {
     currentRecord.value = {
         ...row,
         vary: row.vary?.split(","),
+        category: row.category?.split(","),
         example:
             row.example?.indexOf("[") === 0
                 ? JSON.parse(row.example)

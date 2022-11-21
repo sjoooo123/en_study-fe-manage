@@ -63,12 +63,13 @@
                     v-model="record.category"
                     placeholder="请选择"
                     style="width: 100%"
+                    multiple
                 >
                     <el-option
                         v-for="item in category"
                         :key="item.id"
                         :label="item.name"
-                        :value="item.id"
+                        :value="'' + item.id"
                     />
                 </el-select>
             </el-form-item>
@@ -94,6 +95,20 @@
                 >
                     <el-option
                         v-for="item in sourceOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                    />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="等级">
+                <el-select
+                    v-model="record.grade"
+                    placeholder="请选择"
+                    style="width: 100%"
+                >
+                    <el-option
+                        v-for="item in gradeOptions"
                         :key="item.value"
                         :label="item.label"
                         :value="item.value"
@@ -139,6 +154,7 @@ import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
     levelOptions,
+    gradeOptions,
     sourceOptions,
 } from "../../utils/options";
 import FormList from "../../components/FormList.vue";
@@ -170,6 +186,10 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? SuffixService.add : SuffixService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
+    // 处理分类数组为字符串
+    if (props.record.category instanceof Array) {
+        props.record.category = props.record.category.join(",");
+    }
     // 处理示例
     if (props.record.example instanceof Array) {
         props.record.example = JSON.stringify(props.record.example);
@@ -177,6 +197,9 @@ const excuteAddOrEdit = async () => {
 
     const res = await serviceFun(props.record);
     if (res.data.fail) {
+        if (props.record.category.length) {
+            props.record.category = props.record.category.split(",");
+        }
         if (props.record.example.indexOf("[") === 0) {
             props.record.example = JSON.parse(props.record.example);
         }

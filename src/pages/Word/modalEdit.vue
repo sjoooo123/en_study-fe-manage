@@ -15,13 +15,7 @@
 3、样式
 -->
 <template>
-    <el-dialog
-        v-model="visible"
-        title="数据项处理"
-        width="50%"
-        draggable
-        :close-on-click-modal="false"
-    >
+    <el-dialog v-model="visible" title="数据项处理" width="50%" draggable>
         <el-form
             ref="ruleFormRef"
             :model="record"
@@ -30,23 +24,11 @@
             label-width="120px"
             class="demo-record"
         >
-            <el-form-item label="词缀" prop="affix">
-                <el-input v-model="record.affix" />
+            <el-form-item label="单词" prop="word">
+                <el-input v-model="record.word" />
             </el-form-item>
-            <el-form-item label="所属PIE词根">
-                <el-select
-                    v-model="record.pie"
-                    placeholder="请选择"
-                    style="width: 100%"
-                    filterable
-                >
-                    <el-option
-                        v-for="item in pieroots"
-                        :key="item.id"
-                        :label="item.pieroot"
-                        :value="item.id"
-                    />
-                </el-select>
+            <el-form-item label="音标" prop="phonetic">
+                <el-input v-model="record.phonetic" />
             </el-form-item>
             <el-form-item label="词义">
                 <el-input
@@ -55,49 +37,17 @@
                     autosize
                 />
             </el-form-item>
-            <el-form-item label="示例">
-                <FormList :list="record.example" />
-            </el-form-item>
             <el-form-item label="所属分类">
                 <el-select
                     v-model="record.category"
                     placeholder="请选择"
                     style="width: 100%"
-                    multiple
                 >
                     <el-option
                         v-for="item in category"
                         :key="item.id"
                         :label="item.name"
-                        :value="'' + item.id"
-                    />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="频率">
-                <el-select
-                    v-model="record.frequency"
-                    placeholder="请选择"
-                    style="width: 100%"
-                >
-                    <el-option
-                        v-for="item in frequencyOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                    />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="语源">
-                <el-select
-                    v-model="record.source"
-                    placeholder="请选择"
-                    style="width: 100%"
-                >
-                    <el-option
-                        v-for="item in sourceOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
+                        :value="item.id"
                     />
                 </el-select>
             </el-form-item>
@@ -115,14 +65,14 @@
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="完善程度">
+            <el-form-item label="常用等级">
                 <el-select
-                    v-model="record.level"
+                    v-model="record.commonlevel"
                     placeholder="请选择"
                     style="width: 100%"
                 >
                     <el-option
-                        v-for="item in levelOptions"
+                        v-for="item in commonlevelOptions"
                         :key="item.value"
                         :label="item.label"
                         :value="item.value"
@@ -148,62 +98,49 @@
 // -2、引用
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
-import { PrefixService } from "../../api/prefix"; // 引入接口
-import type { Prefix } from "./list.vue";
+import { WordService } from "../../api/word"; // 引入接口
+import type { Word } from "./list.vue";
 import { categoryType } from "../../api/category";
-import {
-    frequencyOptions,
-    levelOptions,
-    gradeOptions,
-    sourceOptions,
-} from "../../utils/options";
-import FormList from "../../components/FormList.vue";
+import { gradeOptions, commonlevelOptions } from "../../utils/options";
 
 // -1、类型
 interface Props {
     category: categoryType[];
-    record: Prefix; // 表单项数据
+    record: Word; // 表单项数据
     type: string; // 表单类型
-    pieroots: Array; // pie词根列表
 }
 
 // 0、父组件相关
 const emit = defineEmits(["fresh"]); // 声明触发事件
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    category: [],
+    type: "",
+    record: {
+        word: "",
+        translation: "",
+        example: "",
+        category: "",
+        grade: "",
+        note: "",
+    },
+});
 
 // 1、属性
 const visible = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
-    affix: [{ required: true, message: "词根必填", trigger: "blur" }],
+    word: [{ required: true, message: "词根必填", trigger: "blur" }],
 });
 
 // 2、辅助方法
 // 3、异步
 const excuteAddOrEdit = async () => {
     const serviceFun =
-        props.type === "add" ? PrefixService.add : PrefixService.edit;
+        props.type === "add" ? WordService.add : WordService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
-    // 处理分类数组为字符串
-    if (props.record.category instanceof Array) {
-        props.record.category = props.record.category.join(",");
-    }
-    // 处理示例
-    if (props.record.example instanceof Array) {
-        props.record.example = JSON.stringify(props.record.example);
-    }
-
     const res = await serviceFun(props.record);
-    if (res.data.fail) {
-        if (props.record.category.length) {
-            props.record.category = props.record.category.split(",");
-        }
-        if (props.record.example.indexOf("[") === 0) {
-            props.record.example = JSON.parse(props.record.example);
-        }
-        return;
-    }
+    if (res.data.fail) return;
 
     ElMessage.success(successMes);
     visible.value = false;

@@ -18,7 +18,7 @@
 3、样式
 -->
 <template>
-    <p>前缀决定词向</p>
+    <p>不可拆分的常用简单词，分类与词根一致</p>
     <!-- 操作栏 -->
     <div class="table-top-tool">
         精确匹配
@@ -31,7 +31,7 @@
         />
         <el-input
             v-model="input"
-            placeholder="请输入词缀、词义"
+            placeholder="请输入单词、词义"
             class="input-with-select"
             @keydown.enter.native="queryList"
         >
@@ -52,80 +52,23 @@
         @filter-change="filterChange"
     >
         <el-table-column fixed type="index" :index="indexMethod" />
-        <el-table-column prop="affix" label="词缀" width="120" />
-        <el-table-column
-            prop="pie"
-            label="所属PIE词根"
-            column-key="pie"
-            :filters="
-                pieroots?.map((item) => ({
-                    text: item.pieroot,
-                    value: item.id,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{ getPieName(scope.row.pie) }}</span>
-            </template>
-        </el-table-column>
+        <el-table-column prop="word" label="单词" width="120" />
+        <el-table-column prop="phonetic" label="音标" width="120" />
         <el-table-column prop="translation" label="词义" />
-        <el-table-column prop="example" label="示例">
-            <template #default="scope">
-                <span>{{ getExample(scope.row.example) }}</span>
-            </template>
-        </el-table-column>
         <el-table-column
             prop="category"
             label="所属分类"
             column-key="category"
             :filters="
-                categoryPrefix.map((item) => ({
+                categoryWord.map((item) => ({
                     text: item.name,
                     value: item.id,
                 }))
             "
         >
             <template #default="scope">
-                <el-tag
-                    style="margin: 5px"
-                    v-if="scope.row.category"
-                    v-for="item in scope.row.category.split(',')"
-                    :key="item"
-                    >{{ getCategoryPrefixOptionsLabel(item) }}</el-tag
-                >
-            </template>
-        </el-table-column>
-        <el-table-column
-            prop="frequency"
-            label="频率"
-            column-key="frequency"
-            :filters="
-                frequencyOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
                 <span>{{
-                    getOptionsName(frequencyOptions, scope.row.frequency)
-                }}</span>
-            </template>
-        </el-table-column>
-        <el-table-column
-            prop="source"
-            label="语源"
-            column-key="source"
-            :filters="
-                sourceOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{
-                    getOptionsName(sourceOptions, scope.row.source)
+                    getCategoryWordOptionsLabel(scope.row.category)
                 }}</span>
             </template>
         </el-table-column>
@@ -144,21 +87,7 @@
                 <span>{{ getOptionsName(gradeOptions, scope.row.grade) }}</span>
             </template>
         </el-table-column>
-        <el-table-column
-            prop="level"
-            label="完善程度"
-            column-key="level"
-            :filters="
-                levelOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
-            </template>
-        </el-table-column>
+        <el-table-column prop="commonlevel" label="常用等级" />
         <el-table-column prop="note" label="备注" />
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
@@ -198,8 +127,7 @@
         :type="modalType"
         :record="currentRecord"
         @fresh="queryList"
-        :category="categoryPrefix"
-        :pieroots="pieroots"
+        :category="categoryWord"
     />
 </template>
 
@@ -207,39 +135,32 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { PrefixService } from "../../api/prefix"; // 引入接口
-import { PierootService } from "../../api/pieroot"; // 引入接口
+import { WordService } from "../../api/word"; // 引入接口
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
-    sourceOptions,
     gradeOptions,
-    levelOptions,
     getOptionsName,
 } from "../../utils/options";
-import { getExample } from "../../utils/common";
 
 // -1、类型
-export interface Prefix {
+export interface Word {
     id: string;
-    affix: string;
-    pie?: string;
+    word: string;
+    phonetic?: string;
     translation?: string;
-    example?: string;
     category?: string;
-    frequency?: string;
-    note?: string;
-    source?: string;
     grade?: string;
-    level?: string;
+    commonlevel?: string;
+    note?: string;
 }
 
 // 0、父组件相关
 const store = useStore();
-const categoryPrefix = ref([]);
+const categoryWord = ref([]);
 
 // 1.、属性
 const loading = ref(false);
@@ -253,33 +174,26 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const filters = ref(undefined);
-const pieroots = ref([]);
 
 // 2、辅助方法
-const getPieName = (value: string) => {
-    const a = pieroots.value.find((item) => item.id === value);
-    return a?.pieroot || "";
-};
 const indexMethod = (index: number) => {
     return index + 1;
 };
-const getCategoryPrefixOptionsLabel = (value: number) => {
-    const a = categoryPrefix.value.find(
-        (item: categoryType) => item.id === +value
+const getCategoryWordOptionsLabel = (value: number) => {
+    const a = categoryWord.value.find(
+        (item: categoryType) => item.id === value
     );
     return a?.name || "";
 };
+const getfrequencyOptionsLabel = (value: string) => {
+    const a = frequencyOptions.find((item) => item.value === value);
+    return a?.label || "";
+};
 
 // 3、异步
-const queryPIEAll = async () => {
-    const res = await PierootService.queryAll();
-    if (res.data.fail) return;
-
-    pieroots.value = res.data.result.list;
-};
 const queryList = async () => {
     loading.value = true;
-    const res = await PrefixService.queryList({
+    const res = await WordService.queryList({
         exact: exact.value,
         keyword: input.value || undefined,
         page: currentPage.value,
@@ -293,7 +207,7 @@ const queryList = async () => {
     total.value = res.data.result.total;
 };
 const excuteDelete = async (id) => {
-    const res = await PrefixService.delete({ id });
+    const res = await WordService.delete({ id });
     if (res.data.fail) return;
 
     ElMessage.success("删除成功！");
@@ -326,44 +240,17 @@ const handleCurrentChange = (val: number) => {
 };
 const handleAdd = () => {
     currentRecord.value = {
-        affix: "",
-        pie: "",
-        translation: "",
-        example: [],
-        category: "",
-        frequency: "",
-        note: "",
-        source: "",
-        level: "",
+        grade: "初中",
     };
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Prefix) => {
-    // currentRecord.value = { ...row };
-
-    // 示例
-    currentRecord.value = {
-        ...row,
-        // vary: row.vary?.split(","),
-        category: row.category?.split(","),
-        example:
-            row.example?.indexOf("[") === 0
-                ? JSON.parse(row.example)
-                : [
-                      {
-                          word: "",
-                          split: row.example,
-                          midmean: "",
-                          translation: "",
-                      },
-                  ],
-    };
-
+const handleEdit = (index: number, row: Word) => {
+    currentRecord.value = { ...row };
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Prefix) => {
+const handleDelete = (index: number, row: Word) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",
@@ -379,8 +266,9 @@ const handleDelete = (index: number, row: Prefix) => {
 watch(
     () => store.state.category.category.list,
     (n, _o) => {
-        categoryPrefix.value = n.filter(
-            (item: categoryType) => item.type === "prefix"
+        // 使用词根分类
+        categoryWord.value = n.filter(
+            (item: categoryType) => item.type === "wordroot"
         );
     },
     {
@@ -391,7 +279,6 @@ watch(filters, (_n, _o) => {
     queryList();
 });
 onMounted(() => {
-    queryPIEAll();
     queryList();
 });
 

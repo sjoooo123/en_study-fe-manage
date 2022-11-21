@@ -31,8 +31,22 @@
                 <el-input v-model="scope.row.translation" />
             </template>
         </el-table-column>
-        <el-table-column label="操作" width="80">
+        <el-table-column label="操作" width="150">
             <template #default="scope">
+                <el-button
+                    @click.native.prevent="changeIndex(scope.$index, -1)"
+                    type="text"
+                    size="small"
+                    :disabled="scope.$index === 0"
+                    >上移</el-button
+                >
+                <el-button
+                    @click.native.prevent="changeIndex(scope.$index, 1)"
+                    type="text"
+                    size="small"
+                    :disabled="scope.$index === list.length - 1"
+                    >下移</el-button
+                >
                 <el-button
                     @click.native.prevent="deleteRow(scope.$index)"
                     type="text"
@@ -65,9 +79,17 @@ export default {
                 translation: "",
             });
         },
-        // 新增 有效拨打时间
+        // 新增
         onAddItem() {
             this.addList();
+        },
+        // 移动顺序
+        changeIndex(index, offset) {
+            const item = JSON.parse(JSON.stringify(this.list[index + offset]));
+            this.list[index + offset] = JSON.parse(
+                JSON.stringify(this.list[index])
+            );
+            this.list[index] = item;
         },
         // 删除当前行
         deleteRow(index) {
