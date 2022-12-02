@@ -207,7 +207,7 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { SuffixService } from "../../api/suffix"; // 引入接口
+import { SuffixService, suffixType } from "../../api/suffix"; // 引入接口
 import { PierootService } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -221,21 +221,6 @@ import {
     getOptionsName,
 } from "../../utils/options";
 import { getExample } from "../../utils/common";
-
-// -1、类型
-export interface Suffix {
-    id: string;
-    affix: string;
-    pie?: string;
-    translation?: string;
-    example?: string;
-    category?: string;
-    frequency?: string;
-    note?: string;
-    source?: string;
-    level?: string;
-    grade?: string;
-}
 
 // 0、父组件相关
 const store = useStore();
@@ -339,7 +324,7 @@ const handleAdd = () => {
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Suffix) => {
+const handleEdit = (index: number, row: suffixType) => {
     // 示例
     currentRecord.value = {
         ...row,
@@ -361,7 +346,7 @@ const handleEdit = (index: number, row: Suffix) => {
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Suffix) => {
+const handleDelete = (index: number, row: suffixType) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",

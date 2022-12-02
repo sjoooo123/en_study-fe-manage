@@ -151,6 +151,13 @@ export const fieldOptions = [
     { label: "畜牧兽医", value: 7 },
     { label: "传播学", value: 8 },
     { label: "地理", value: 9 },
+    { label: "会计", value: 10 },
+    { label: "计算机", value: 11 },
+    { label: "历史", value: 12 },
+    { label: "商务", value: 13 },
+    { label: "生物", value: 14 },
+    { label: "物流", value: 15 },
+    { label: "心理学", value: 16 },
 ];
 
 // 常用级

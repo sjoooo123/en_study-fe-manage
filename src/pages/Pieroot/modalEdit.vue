@@ -115,8 +115,7 @@
 // -2、引用
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
-import { PierootService } from "../../api/pieroot"; // 引入接口
-import type { Pieroot } from "./list.vue";
+import { PierootService, pierootType } from "../../api/pieroot"; // 引入接口
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
@@ -129,7 +128,7 @@ import FormList from "../../components/FormList.vue";
 // -1、类型
 interface Props {
     category: categoryType[];
-    record: Pieroot; // 表单项数据
+    record: pierootType; // 表单项数据
     type: string; // 表单类型
 }
 

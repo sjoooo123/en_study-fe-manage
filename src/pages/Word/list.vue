@@ -73,6 +73,91 @@
             </template>
         </el-table-column>
         <el-table-column
+            prop="pie"
+            label="所属PIE词根"
+            column-key="pie"
+            :filters="
+                pieroots?.map((item) => ({
+                    text: item.pieroot,
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.pie"
+                    v-for="item in scope.row.pie.split(',')"
+                    :key="item"
+                    >{{ getPieName(item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="prefix"
+            label="包含前缀"
+            column-key="prefix"
+            :filters="
+                prefixes.map((item) => ({
+                    text: item.affix + '（' + item.translation + '）',
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.prefix"
+                    v-for="item in scope.row.prefix.split(',')"
+                    :key="item"
+                    >{{ getPrefixOptionsLabel(item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="root"
+            label="包含词根"
+            column-key="root"
+            :filters="
+                wordroots.map((item) => ({
+                    text: item.root + '（' + item.translation + '）',
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.root"
+                    v-for="item in scope.row.root.split(',')"
+                    :key="item"
+                    >{{ getWordrootOptionsLabel(item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="suffix"
+            label="包含后缀"
+            column-key="suffix"
+            :filters="
+                suffixes.map((item) => ({
+                    text: item.affix + '（' + item.translation + '）',
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.suffix"
+                    v-for="item in scope.row.suffix.split(',')"
+                    :key="item"
+                    >{{ getSuffixOptionsLabel(item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column prop="memskill" label="记忆技巧" />
+        <el-table-column
             prop="grade"
             label="等级"
             column-key="grade"
@@ -87,7 +172,7 @@
                 <span>{{ getOptionsName(gradeOptions, scope.row.grade) }}</span>
             </template>
         </el-table-column>
-        <el-table-column prop="commonlevel" label="常用等级" />
+        <el-table-column prop="level" label="常用等级" />
         <el-table-column prop="note" label="备注" />
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
@@ -128,6 +213,10 @@
         :record="currentRecord"
         @fresh="queryList"
         :category="categoryWord"
+        :pieroots="pieroots"
+        :wordroots="wordroots"
+        :prefixes="prefixes"
+        :suffixes="suffixes"
     />
 </template>
 
@@ -135,7 +224,11 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { WordService } from "../../api/word"; // 引入接口
+import { WordService, wordType } from "../../api/word"; // 引入接口
+import { PierootService, pierootType } from "../../api/pieroot";
+import { WordrootService, wordrootType } from "../../api/wordroot";
+import { PrefixService, prefixType } from "../../api/prefix";
+import { SuffixService, suffixType } from "../../api/suffix";
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
@@ -145,18 +238,6 @@ import {
     gradeOptions,
     getOptionsName,
 } from "../../utils/options";
-
-// -1、类型
-export interface Word {
-    id: string;
-    word: string;
-    phonetic?: string;
-    translation?: string;
-    category?: string;
-    grade?: string;
-    commonlevel?: string;
-    note?: string;
-}
 
 // 0、父组件相关
 const store = useStore();
@@ -174,6 +255,10 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const filters = ref(undefined);
+const pieroots = ref([]);
+const wordroots = ref([]);
+const prefixes = ref([]);
+const suffixes = ref([]);
 
 // 2、辅助方法
 const indexMethod = (index: number) => {
@@ -185,12 +270,52 @@ const getCategoryWordOptionsLabel = (value: number) => {
     );
     return a?.name || "";
 };
+const getPieName = (value: string) => {
+    const a = pieroots.value.find((item: pierootType) => item.id === +value);
+    return a?.pieroot || "";
+};
+const getWordrootOptionsLabel = (value: string) => {
+    const a = wordroots.value.find((item: wordrootType) => item.id === +value);
+    return a?.wordroot.split("(")[0] || "";
+};
+const getPrefixOptionsLabel = (value: string) => {
+    const a = prefixes.value.find((item: prefixType) => item.id === +value);
+    return a?.affix.split("(")[0] || "";
+};
+const getSuffixOptionsLabel = (value: string) => {
+    const a = suffixes.value.find((item: suffixType) => item.id === +value);
+    return a?.affix.split("(")[0] || "";
+};
 const getfrequencyOptionsLabel = (value: string) => {
     const a = frequencyOptions.find((item) => item.value === value);
     return a?.label || "";
 };
 
 // 3、异步
+const queryPierootAll = async () => {
+    const res = await PierootService.queryAll();
+    if (res.data.fail) return;
+
+    pieroots.value = res.data.result.list;
+};
+const queryWordrootAll = async () => {
+    const res = await WordrootService.queryAll();
+    if (res.data.fail) return;
+
+    wordroots.value = res.data.result.list;
+};
+const queryPrefixAll = async () => {
+    const res = await PrefixService.queryAll();
+    if (res.data.fail) return;
+
+    prefixes.value = res.data.result.list;
+};
+const querySuffixAll = async () => {
+    const res = await SuffixService.queryAll();
+    if (res.data.fail) return;
+
+    suffixes.value = res.data.result.list;
+};
 const queryList = async () => {
     loading.value = true;
     const res = await WordService.queryList({
@@ -224,7 +349,7 @@ const filterChange = (f: any) => {
 
         // grade等级为其他
         if (k === "grade") {
-            f[k] = f[k].map((item) => (item === "其他" ? null : item));
+            f[k] = f[k]?.map((item) => (item === "其他" ? null : item));
         }
     }
 
@@ -245,12 +370,20 @@ const handleAdd = () => {
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Word) => {
-    currentRecord.value = { ...row };
+const handleEdit = (index: number, row: wordType) => {
+    // 包含词根，包含前缀，包含后缀
+    currentRecord.value = {
+        ...row,
+        pie: row.pie?.split(",").filter((d) => d.length),
+        root: row.root?.split(",").filter((d) => d.length),
+        prefix: row.prefix?.split(",").filter((d) => d.length),
+        suffix: row.suffix?.split(",").filter((d) => d.length),
+    };
+
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Word) => {
+const handleDelete = (index: number, row: wordType) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",
@@ -279,6 +412,10 @@ watch(filters, (_n, _o) => {
     queryList();
 });
 onMounted(() => {
+    queryPierootAll();
+    queryWordrootAll();
+    queryPrefixAll();
+    querySuffixAll();
     queryList();
 });
 

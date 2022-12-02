@@ -233,7 +233,7 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { WordrootService } from "../../api/wordroot"; // 引入接口
+import { WordrootService, wordrootType } from "../../api/wordroot"; // 引入接口
 import { PierootService } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -248,21 +248,6 @@ import {
     getOptionsName,
 } from "../../utils/options";
 import { getExample } from "../../utils/common";
-
-// -1、类型
-export interface Wordroot {
-    id: string;
-    wordroot: string;
-    pie?: string;
-    translation?: string;
-    category?: string;
-    frequency?: string;
-    note?: string;
-    source?: string;
-    vary?: string;
-    level?: string;
-    grade?: string;
-}
 
 // 0、父组件相关
 const store = useStore();
@@ -382,7 +367,7 @@ const handleAdd = () => {
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Wordroot) => {
+const handleEdit = (index: number, row: wordrootType) => {
     // 示例
     // row.example = JSON.stringify([
     //     {
@@ -414,7 +399,7 @@ const handleEdit = (index: number, row: Wordroot) => {
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Wordroot) => {
+const handleDelete = (index: number, row: wordrootType) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",

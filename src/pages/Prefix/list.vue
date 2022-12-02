@@ -207,7 +207,7 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { PrefixService } from "../../api/prefix"; // 引入接口
+import { PrefixService, prefixType } from "../../api/prefix"; // 引入接口
 import { PierootService } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -221,21 +221,6 @@ import {
     getOptionsName,
 } from "../../utils/options";
 import { getExample } from "../../utils/common";
-
-// -1、类型
-export interface Prefix {
-    id: string;
-    affix: string;
-    pie?: string;
-    translation?: string;
-    example?: string;
-    category?: string;
-    frequency?: string;
-    note?: string;
-    source?: string;
-    grade?: string;
-    level?: string;
-}
 
 // 0、父组件相关
 const store = useStore();
@@ -339,7 +324,7 @@ const handleAdd = () => {
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Prefix) => {
+const handleEdit = (index: number, row: prefixType) => {
     // currentRecord.value = { ...row };
 
     // 示例
@@ -363,7 +348,7 @@ const handleEdit = (index: number, row: Prefix) => {
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Prefix) => {
+const handleDelete = (index: number, row: prefixType) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",

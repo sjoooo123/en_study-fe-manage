@@ -170,8 +170,7 @@
 // -2、引用
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
-import { WordrootService } from "../../api/wordroot"; // 引入接口
-import type { Wordroot } from "./list.vue";
+import { WordrootService, wordrootType } from "../../api/wordroot"; // 引入接口
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
@@ -185,7 +184,7 @@ import FormList from "../../components/FormList.vue";
 // -1、类型
 interface Props {
     category: categoryType[];
-    record: Wordroot; // 表单项数据
+    record: wordrootType; // 表单项数据
     type: string; // 表单类型
     pieroots: Array; // pie词根列表
 }
@@ -193,21 +192,6 @@ interface Props {
 // 0、父组件相关
 const emit = defineEmits(["fresh"]); // 声明触发事件
 const props = defineProps<Props>();
-// const props = withDefaults(defineProps<Props>(), {
-//     category: [],
-//     type: "",
-//     record: {
-//         wordroot: "",
-//         translation: "",
-//         example: [],
-//         category: "",
-//         frequency: "",
-//         note: "",
-//         source: "",
-//         vary: "",
-//         level: "0",
-//     },
-// });
 
 // 1、属性
 const visible = ref(false);

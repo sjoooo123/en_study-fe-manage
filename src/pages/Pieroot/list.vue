@@ -149,7 +149,7 @@
 // -2、引用
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
-import { PierootService } from "../../api/pieroot"; // 引入接口
+import { PierootService, pierootType } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
@@ -161,18 +161,6 @@ import {
     varyOptions,
     getOptionsName,
 } from "../../utils/options";
-
-// -1、类型
-export interface Pieroot {
-    id: string;
-    pieroot: string;
-    translation?: string;
-    category?: string;
-    note?: string;
-    level?: string;
-    vary?: string;
-    varyDetail?: string;
-}
 
 // 0、父组件相关
 const store = useStore();
@@ -270,7 +258,7 @@ const handleAdd = () => {
     modalType.value = "add";
     editRef.value.visible = true;
 };
-const handleEdit = (index: number, row: Pieroot) => {
+const handleEdit = (index: number, row: pierootType) => {
     currentRecord.value = {
         ...row,
         vary: row.vary?.split(","),
@@ -279,7 +267,7 @@ const handleEdit = (index: number, row: Pieroot) => {
     modalType.value = "edit";
     editRef.value.visible = true;
 };
-const handleDelete = (index: number, row: Pieroot) => {
+const handleDelete = (index: number, row: pierootType) => {
     ElMessageBox.confirm("确认删除？", "警告", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",
