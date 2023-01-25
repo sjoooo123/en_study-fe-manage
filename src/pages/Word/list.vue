@@ -74,11 +74,11 @@
         </el-table-column>
         <el-table-column
             prop="pie"
-            label="所属PIE词根"
+            label="词源链"
             column-key="pie"
             :filters="
                 pieroots?.map((item) => ({
-                    text: item.pieroot,
+                    text: getSourceName(item),
                     value: item.id,
                 }))
             "
@@ -90,6 +90,21 @@
                     v-for="item in scope.row.pie.split(',')"
                     :key="item"
                     >{{ getPieName(item) }}</el-tag
+                >
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="simWord"
+            label="包含词基"
+            column-key="simWord"
+        >
+            <template #default="scope">
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.simWord"
+                    v-for="item in scope.row.simWord.split(',')"
+                    :key="item"
+                    >{{ getWordOptionsLabel(item) }}</el-tag
                 >
             </template>
         </el-table-column>
@@ -215,6 +230,7 @@
         :category="categoryWord"
         :pieroots="pieroots"
         :wordroots="wordroots"
+        :words="words"
         :prefixes="prefixes"
         :suffixes="suffixes"
     />
@@ -238,6 +254,7 @@ import {
     gradeOptions,
     getOptionsName,
 } from "../../utils/options";
+import { getSourceName } from "../../utils/common";
 
 // 0、父组件相关
 const store = useStore();
@@ -257,6 +274,7 @@ const pageSize = ref(100);
 const filters = ref(undefined);
 const pieroots = ref([]);
 const wordroots = ref([]);
+const words = ref([]);
 const prefixes = ref([]);
 const suffixes = ref([]);
 
@@ -272,11 +290,15 @@ const getCategoryWordOptionsLabel = (value: number) => {
 };
 const getPieName = (value: string) => {
     const a = pieroots.value.find((item: pierootType) => item.id === +value);
-    return a?.pieroot || "";
+    return a ? getSourceName(a) : "";
 };
 const getWordrootOptionsLabel = (value: string) => {
     const a = wordroots.value.find((item: wordrootType) => item.id === +value);
     return a?.wordroot.split("(")[0] || "";
+};
+const getWordOptionsLabel = (value: string) => {
+    const a = words.value.find((item: wordType) => item.id === +value);
+    return a?.word.split("(")[0] || "";
 };
 const getPrefixOptionsLabel = (value: string) => {
     const a = prefixes.value.find((item: prefixType) => item.id === +value);
@@ -303,6 +325,12 @@ const queryWordrootAll = async () => {
     if (res.data.fail) return;
 
     wordroots.value = res.data.result.list;
+};
+const queryWordAll = async () => {
+    const res = await WordService.queryAll();
+    if (res.data.fail) return;
+
+    words.value = res.data.result.list;
 };
 const queryPrefixAll = async () => {
     const res = await PrefixService.queryAll();
@@ -338,6 +366,13 @@ const excuteDelete = async (id) => {
     ElMessage.success("删除成功！");
     queryList();
 };
+const fetchAll = () => {
+    queryPierootAll();
+    queryWordrootAll();
+    queryWordAll();
+    queryPrefixAll();
+    querySuffixAll();
+}
 
 // 4、交互
 const filterChange = (f: any) => {
@@ -376,9 +411,12 @@ const handleEdit = (index: number, row: wordType) => {
         ...row,
         pie: row.pie?.split(",").filter((d) => d.length),
         root: row.root?.split(",").filter((d) => d.length),
+        simWord: row.simWord?.split(",").filter((d) => d.length),
         prefix: row.prefix?.split(",").filter((d) => d.length),
         suffix: row.suffix?.split(",").filter((d) => d.length),
     };
+
+    fetchAll();
 
     modalType.value = "edit";
     editRef.value.visible = true;
@@ -412,10 +450,7 @@ watch(filters, (_n, _o) => {
     queryList();
 });
 onMounted(() => {
-    queryPierootAll();
-    queryWordrootAll();
-    queryPrefixAll();
-    querySuffixAll();
+    fetchAll();
     queryList();
 });
 

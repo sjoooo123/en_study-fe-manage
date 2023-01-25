@@ -9,8 +9,8 @@
         <li :class="{ cur: curTitle === '分类' }">
             <router-link to="/category">分类</router-link>
         </li>
-        <li :class="{ cur: curTitle === 'pie词根' }">
-            <router-link to="/pieroot">pie词根</router-link>
+        <li :class="{ cur: curTitle === '词源' }">
+            <router-link to="/pieroot">词源</router-link>
         </li>
         <li :class="{ cur: curTitle === '词根' }">
             <router-link to="/wordroot">词根</router-link>
@@ -47,12 +47,12 @@ const routeTitleMap = new Map([
     ["/home", "首页"],
     ["/dict", "字典"],
     ["/category", "分类"],
-    ["/pieroot", "pie词根"],
+    ["/pieroot", "词源"],
     ["/wordroot", "词根"],
     ["/prefix", "前缀"],
     ["/suffix", "后缀"],
     ["/word", "单词"],
-    ["/fieldword", "单词"],
+    ["/fieldword", "专业单词"],
 ]);
 
 // 2、辅助方法

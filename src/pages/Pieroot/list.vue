@@ -51,7 +51,13 @@
         @filter-change="filterChange"
     >
         <el-table-column fixed type="index" :index="indexMethod" />
-        <el-table-column prop="pieroot" label="词根" width="120" />
+        <el-table-column label="词根" width="120">
+            <template #default="scope">
+                <span>{{
+                    getSourceName(scope.row)
+                }}</span>
+            </template>
+        </el-table-column>
         <el-table-column prop="translation" label="词义" />
         <el-table-column
             prop="category"
@@ -71,18 +77,20 @@
             </template>
         </el-table-column>
         <el-table-column
-            prop="level"
-            label="完善程度"
-            column-key="level"
+            prop="type"
+            label="语言类型"
+            column-key="type"
             :filters="
-                levelOptions.map((item) => ({
+                langTypeOptions.map((item) => ({
                     text: item.label,
                     value: item.value,
                 }))
             "
         >
             <template #default="scope">
-                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
+                <span>{{
+                    getOptionsName(langTypeOptions, scope.row.type)
+                }}</span>
             </template>
         </el-table-column>
         <el-table-column prop="note" label="备注" />
@@ -140,7 +148,7 @@
         ref="editRef"
         :type="modalType"
         :record="currentRecord"
-        @fresh="queryList"
+        @fresh="fresh"
         :category="categoryPieroot"
     />
 </template>
@@ -156,11 +164,11 @@ import { useStore } from "vuex";
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
-    sourceOptions,
-    levelOptions,
+    langTypeOptions,
     varyOptions,
     getOptionsName,
 } from "../../utils/options";
+import { getSourceName } from "../../utils/common";
 
 // 0、父组件相关
 const store = useStore();
@@ -251,6 +259,7 @@ const handleAdd = () => {
     currentRecord.value = {
         pieroot: "",
         translation: "",
+        chainInfo: [],
         category: "",
         note: "",
         level: "",
@@ -262,6 +271,17 @@ const handleEdit = (index: number, row: pierootType) => {
     currentRecord.value = {
         ...row,
         vary: row.vary?.split(","),
+        chainInfo:
+            row.chainInfo?.indexOf("[") === 0
+                ? JSON.parse(row.chainInfo)
+                : [
+                    //   {
+                    //       word: '',
+                    //       translation: "",
+                    //       type: '',
+                    //       des: ''
+                    //   },
+                  ],
     };
 
     modalType.value = "edit";
@@ -278,6 +298,10 @@ const handleDelete = (index: number, row: pierootType) => {
         })
         .catch();
 };
+// 刷新
+const fresh = () => {
+    queryList();
+}
 
 // 5、生命周期
 watch(

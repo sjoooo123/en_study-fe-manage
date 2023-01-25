@@ -51,7 +51,7 @@
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="所属PIE词根">
+            <el-form-item label="词源链">
                 <el-select
                     v-model="record.pie"
                     placeholder="请选择"
@@ -62,7 +62,7 @@
                     <el-option
                         v-for="item in pieroots"
                         :key="item.id"
-                        :label="item.pieroot"
+                        :label="getSourceName(item)"
                         :value="'' + item.id"
                     />
                 </el-select>
@@ -95,6 +95,22 @@
                         v-for="item in wordroots"
                         :key="item.id"
                         :label="item.wordroot + '（' + item.translation + '）'"
+                        :value="'' + item.id"
+                    />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="包含词基">
+                <el-select
+                    v-model="record.simWord"
+                    placeholder="请选择"
+                    style="width: 100%"
+                    multiple
+                    filterable
+                >
+                    <el-option
+                        v-for="item in words"
+                        :key="item.id"
+                        :label="item.word + '（' + item.translation + '）'"
                         :value="'' + item.id"
                     />
                 </el-select>
@@ -172,11 +188,13 @@ import { prefixType } from "../../api/prefix";
 import { suffixType } from "../../api/suffix";
 import { categoryType } from "../../api/category";
 import { gradeOptions, commonlevelOptions } from "../../utils/options";
+import { getSourceName } from "../../utils/common";
 
 // -1、类型
 interface Props {
     pieroots: pierootType[]; // pie词根列表
     wordroots: wordrootType[];
+    words: wordType[]; 
     prefixes: prefixType[];
     suffixes: suffixType[];
     category: categoryType[];
@@ -189,6 +207,8 @@ const emit = defineEmits(["fresh"]); // 声明触发事件
 const props = defineProps<Props>();
 
 // 1、属性
+const wordsOptionsMaxLength = 20;
+const wordsOptions = ref(props.words.slice(0, wordsOptionsMaxLength));
 const visible = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
@@ -196,6 +216,18 @@ const rules = reactive({
 });
 
 // 2、辅助方法
+const filterMethod = (query) => {                                                        //query是输入的关键字
+    if(query == '')            
+        wordsOptions.value = props.words.slice(0, wordsOptionsMaxLength)
+    else{
+        let result = []                                                        //存储符合条件的下拉选项
+        props.words.forEach(val=>{
+            if(val.word.indexOf(query)!=-1 || val.translation.indexOf(query)!=-1) result.push(val)
+        })
+        wordsOptions.value = result.slice(0,wordsOptionsMaxLength)                                    //只取前10个
+    }
+}
+
 // 3、异步
 const excuteAddOrEdit = async () => {
     const serviceFun =
@@ -209,6 +241,10 @@ const excuteAddOrEdit = async () => {
     // 处理包含词根数组为字符串
     if (props.record.root instanceof Array) {
         props.record.root = props.record.root.join(",");
+    }
+    // 处理包含简单词数组为字符串
+    if (props.record.simWord instanceof Array) {
+        props.record.simWord = props.record.simWord.join(",");
     }
     // 处理包含前缀数组为字符串
     if (props.record.prefix instanceof Array) {
@@ -226,6 +262,9 @@ const excuteAddOrEdit = async () => {
         }
         if (props.record.root.length) {
             props.record.root = props.record.root.split(",");
+        }
+        if (props.record.simWord.length) {
+            props.record.simWord = props.record.simWord.split(",");
         }
         if (props.record.prefix.length) {
             props.record.prefix = props.record.prefix.split(",");

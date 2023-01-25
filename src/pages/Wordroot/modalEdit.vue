@@ -33,7 +33,7 @@
             <el-form-item label="词跟" prop="wordroot">
                 <el-input v-model="record.wordroot" />
             </el-form-item>
-            <el-form-item label="所属PIE词根">
+            <el-form-item label="词源链">
                 <el-select
                     v-model="record.pie"
                     placeholder="请选择"
@@ -43,7 +43,7 @@
                     <el-option
                         v-for="item in pieroots"
                         :key="item.id"
-                        :label="item.pieroot"
+                        :label="getSourceName(item)"
                         :value="item.id"
                     />
                 </el-select>
@@ -180,6 +180,7 @@ import {
     varyOptions,
 } from "../../utils/options";
 import FormList from "../../components/FormList.vue";
+import { getSourceName } from "../../utils/common";
 
 // -1、类型
 interface Props {

@@ -14,6 +14,24 @@ export const sourceOptions = [
     { label: "其他", value: "其他" },
 ];
 
+// 语言类型
+export const langTypeOptions = [
+    { label: "原始印欧语", value: "PIE" },
+    { label: "希腊语", value: "GK" },
+    { label: "拉丁语", value: "L" },
+    { label: "中古英语", value: "ME" },
+    { label: "日耳曼语", value: "OE" },
+    { label: "法语", value: "F" },
+    { label: "中古法语", value: "MF" },
+    { label: "西班牙语", value: "SPANISH" },
+    { label: "意大利语", value: "ITALY" },
+    { label: "爱尔兰语", value: "Irish" },
+    { label: "盖尔族语", value: "Gaelic" },
+    { label: "中古荷兰语", value: "Dutch" },
+    { label: "德语", value: "German" },
+    
+];
+
 // 音变规律
 export const varyOptions = [
     {
@@ -138,6 +156,7 @@ export const gradeOptions = [
     { label: "雅思", value: "雅思" },
     { label: "托福", value: "托福" },
     { label: "TEM-8", value: "TEM-8" },
+    { label: "辅助词基", value: "CIJI" },
 ];
 
 // 专业领域

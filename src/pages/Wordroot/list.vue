@@ -60,11 +60,11 @@
         <el-table-column prop="wordroot" label="词根" width="120" />
         <el-table-column
             prop="pie"
-            label="所属PIE词根"
+            label="词源链"
             column-key="pie"
             :filters="
                 pieroots?.map((item) => ({
-                    text: item.pieroot,
+                    text: getSourceName(item),
                     value: item.id,
                 }))
             "
@@ -247,7 +247,7 @@ import {
     varyOptions,
     getOptionsName,
 } from "../../utils/options";
-import { getExample } from "../../utils/common";
+import { getExample, getSourceName } from "../../utils/common";
 
 // 0、父组件相关
 const store = useStore();
@@ -316,7 +316,6 @@ const queryList = async () => {
     if (res.data.fail) return;
 
     tableData.value = res.data.result.list;
-    console.log(tableData);
     total.value = res.data.result.total;
 };
 const excuteDelete = async (id) => {

@@ -30,7 +30,7 @@
             label-width="120px"
             class="demo-record"
         >
-            <el-form-item label="词跟" prop="pieroot">
+            <el-form-item label="词源" prop="pieroot">
                 <el-input v-model="record.pieroot" />
             </el-form-item>
             <el-form-item label="词义">
@@ -54,14 +54,17 @@
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="完善程度">
+            <el-form-item label="词源链">
+                <ChainList :list="record.chainInfo" />
+            </el-form-item>
+            <el-form-item label="语言类型">
                 <el-select
-                    v-model="record.level"
+                    v-model="record.type"
                     placeholder="请选择"
                     style="width: 100%"
                 >
                     <el-option
-                        v-for="item in levelOptions"
+                        v-for="item in langTypeOptions"
                         :key="item.value"
                         :label="item.label"
                         :value="item.value"
@@ -119,11 +122,10 @@ import { PierootService, pierootType } from "../../api/pieroot"; // 引入接口
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
-    levelOptions,
-    sourceOptions,
+    langTypeOptions,
     varyOptions,
 } from "../../utils/options";
-import FormList from "../../components/FormList.vue";
+import ChainList from "../../components/ChainList.vue";
 
 // -1、类型
 interface Props {
@@ -155,11 +157,18 @@ const excuteAddOrEdit = async () => {
     if (props.record.vary instanceof Array) {
         props.record.vary = props.record.vary.join(",");
     }
+    // 处理词源链
+    if (props.record.chainInfo instanceof Array) {
+        props.record.chainInfo = JSON.stringify(props.record.chainInfo);
+    }
 
     const res = await serviceFun(props.record);
     if (res.data.fail) {
         if (props.record.vary.length) {
             props.record.vary = props.record.vary.split(",");
+        }
+        if (props.record.chainInfo.indexOf("[") === 0) {
+            props.record.chainInfo = JSON.parse(props.record.chainInfo);
         }
         return;
     }

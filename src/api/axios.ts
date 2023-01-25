@@ -134,8 +134,8 @@ export const clearPending = () => {
 // 请求拦截器
 service.interceptors.request.use(
 	(config: AxiosRequestConfig) => {
-		removePending(config) // 在请求开始前，对之前的请求做检查取消操作
-		addPending(config) // 将当前请求添加到 pending 中
+		// removePending(config) // 在请求开始前，对之前的请求做检查取消操作
+		// addPending(config) // 将当前请求添加到 pending 中
 		let token = localStorage.getItem('token')
 		if (token) {
 			config.headers.Authorization = `${token}`
@@ -153,7 +153,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
 	(response: AxiosResponse) => {
-		removePending(response) // 在请求结束后，移除本次请求
+		// removePending(response) // 在请求结束后，移除本次请求
 		const status = response.status
 		let msg = ''
 		if (status < 200 || status >= 300) {

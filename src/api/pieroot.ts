@@ -12,6 +12,7 @@ export interface pierootType {
     id: string;
     pieroot: string;
     translation?: string;
+    chainInfo?: string;
     category?: string;
     note?: string;
     level?: string;
