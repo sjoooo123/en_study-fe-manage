@@ -34,19 +34,7 @@
                 <el-input v-model="record.wordroot" />
             </el-form-item>
             <el-form-item label="词源链">
-                <el-select
-                    v-model="record.pie"
-                    placeholder="请选择"
-                    style="width: 100%"
-                    filterable
-                >
-                    <el-option
-                        v-for="item in pieroots"
-                        :key="item.id"
-                        :label="getSourceName(item)"
-                        :value="item.id"
-                    />
-                </el-select>
+                <ChainList :list="record.pie"/>
             </el-form-item>
             <el-form-item label="词义">
                 <el-input
@@ -170,6 +158,7 @@
 // -2、引用
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
+import { PierootService } from "../../api/pieroot";
 import { WordrootService, wordrootType } from "../../api/wordroot"; // 引入接口
 import { categoryType } from "../../api/category";
 import {
@@ -181,6 +170,7 @@ import {
 } from "../../utils/options";
 import FormList from "../../components/FormList.vue";
 import { getSourceName } from "../../utils/common";
+import ChainList from "../../components/ChainList.vue";
 
 // -1、类型
 interface Props {
@@ -209,29 +199,42 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? WordrootService.add : WordrootService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
+    const {pie, category, vary, example} = props.record;
+
+    // 处理包含pie数组为字符串
+    if (pie instanceof Array) {
+        props.record.pie= pie.map(item=>item.pie).join(",");
+        // 修改词源标识
+        if(pie[0]) {
+            await  PierootService.setIsRoot({id: +pie[0].pie, isRoot: 1});
+        }
+    }
     // 处理分类数组为字符串
-    if (props.record.category instanceof Array) {
-        props.record.category = props.record.category.join(",");
+    if (category instanceof Array) {
+        props.record.category = category.join(",");
     }
     // 处理音变规律数组为字符串
-    if (props.record.vary instanceof Array) {
-        props.record.vary = props.record.vary.join(",");
+    if (vary instanceof Array) {
+        props.record.vary = vary.join(",");
     }
     // 处理示例
-    if (props.record.example instanceof Array) {
-        props.record.example = JSON.stringify(props.record.example);
+    if (example instanceof Array) {
+        props.record.example = JSON.stringify(example);
     }
 
     const res = await serviceFun(props.record);
     if (res.data.fail) {
-        if (props.record.category.length) {
-            props.record.category = props.record.category.split(",");
+        if (pie.length) {
+            props.record.pie= pie.split(",").map(item=>({pie: item}));
         }
-        if (props.record.vary.length) {
-            props.record.vary = props.record.vary.split(",");
+        if (category.length) {
+            props.record.category = category.split(",");
         }
-        if (props.record.example.indexOf("[") === 0) {
-            props.record.example = JSON.parse(props.record.example);
+        if (vary.length) {
+            props.record.vary = vary.split(",");
+        }
+        if (example.indexOf("[") === 0) {
+            props.record.example = JSON.parse(example);
         }
         return;
     }

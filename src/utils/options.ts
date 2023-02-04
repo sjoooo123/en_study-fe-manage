@@ -20,16 +20,28 @@ export const langTypeOptions = [
     { label: "希腊语", value: "GK" },
     { label: "拉丁语", value: "L" },
     { label: "中古英语", value: "ME" },
-    { label: "日耳曼语", value: "OE" },
+    { label: "古英语", value: "OE" },
+    { label: "日耳曼语", value: "Germanic" },
+    { label: "原始日耳曼语", value: "Proto-Germanic" },
     { label: "法语", value: "F" },
     { label: "中古法语", value: "MF" },
+    { label: "古法语", value: "OF" },
     { label: "西班牙语", value: "SPANISH" },
     { label: "意大利语", value: "ITALY" },
     { label: "爱尔兰语", value: "Irish" },
     { label: "盖尔族语", value: "Gaelic" },
     { label: "中古荷兰语", value: "Dutch" },
     { label: "德语", value: "German" },
-    
+    { label: "希伯来语", value: "Hebrew" },
+    { label: "阿拉伯语", value: "Arabic" },
+    { label: "泰米尔语", value: "Tamil" },
+    { label: "梵语", value: "Sanskrit" },
+    { label: "印地语", value: "Hindi" },
+    { label: "挪威语", value: "Norse" },
+    { label: "波斯语", value: "Persian" },
+    { label: "法兰克语", value: "Frankish"},
+    { label: "撒克逊语", value: "Saxon"},
+    { label: "意第绪语", value: "Yiddish"}
 ];
 
 // 音变规律

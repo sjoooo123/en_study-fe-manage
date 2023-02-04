@@ -52,20 +52,7 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="词源链">
-                <el-select
-                    v-model="record.pie"
-                    placeholder="请选择"
-                    style="width: 100%"
-                    filterable
-                    multiple
-                >
-                    <el-option
-                        v-for="item in pieroots"
-                        :key="item.id"
-                        :label="getSourceName(item)"
-                        :value="'' + item.id"
-                    />
-                </el-select>
+                <ChainList :list="record.pie"/>
             </el-form-item>
             <el-form-item label="包含前缀">
                 <el-select
@@ -182,17 +169,16 @@
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
 import { WordService, wordType } from "../../api/word"; // 引入接口
-import { pierootType } from "../../api/pieroot";
+import { PierootService } from "../../api/pieroot";
 import { wordrootType } from "../../api/wordroot";
 import { prefixType } from "../../api/prefix";
 import { suffixType } from "../../api/suffix";
 import { categoryType } from "../../api/category";
 import { gradeOptions, commonlevelOptions } from "../../utils/options";
-import { getSourceName } from "../../utils/common";
+import ChainList from "../../components/ChainList.vue";
 
 // -1、类型
 interface Props {
-    pieroots: pierootType[]; // pie词根列表
     wordroots: wordrootType[];
     words: wordType[]; 
     prefixes: prefixType[];
@@ -234,43 +220,49 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? WordService.add : WordService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
+    const {pie, root, simWord, prefix, suffix} = props.record;
+
     // 处理包含pie数组为字符串
-    if (props.record.pie instanceof Array) {
-        props.record.pie = props.record.pie.join(",");
+    if (pie instanceof Array) {
+        props.record.pie= pie.map(item=>item.pie).join(",");
+        // 修改词源标识
+        if(pie[0]) {
+            await  PierootService.setIsRoot({id: +pie[0].pie, isRoot: 1});
+        }
     }
     // 处理包含词根数组为字符串
-    if (props.record.root instanceof Array) {
-        props.record.root = props.record.root.join(",");
+    if (root instanceof Array) {
+        props.record.root = root.join(",");
     }
     // 处理包含简单词数组为字符串
-    if (props.record.simWord instanceof Array) {
-        props.record.simWord = props.record.simWord.join(",");
+    if (simWord instanceof Array) {
+        props.record.simWord = simWord.join(",");
     }
     // 处理包含前缀数组为字符串
-    if (props.record.prefix instanceof Array) {
-        props.record.prefix = props.record.prefix.join(",");
+    if (prefix instanceof Array) {
+        props.record.prefix = prefix.join(",");
     }
     // 处理包含后缀数组为字符串
-    if (props.record.suffix instanceof Array) {
-        props.record.suffix = props.record.suffix.join(",");
+    if (suffix instanceof Array) {
+        props.record.suffix = suffix.join(",");
     }
 
     const res = await serviceFun(props.record);
     if (res.data.fail) {
-        if (props.record.pie.length) {
-            props.record.pie = props.record.pie.split(",");
+        if (pie.length) {
+            props.record.pie= pie.split(",").map(item=>({pie: item}));
         }
-        if (props.record.root.length) {
-            props.record.root = props.record.root.split(",");
+        if (root.length) {
+            props.record.root = root.split(",");
         }
-        if (props.record.simWord.length) {
-            props.record.simWord = props.record.simWord.split(",");
+        if (simWord.length) {
+            props.record.simWord = simWord.split(",");
         }
-        if (props.record.prefix.length) {
-            props.record.prefix = props.record.prefix.split(",");
+        if (prefix.length) {
+            props.record.prefix = prefix.split(",");
         }
-        if (props.record.suffix.length) {
-            props.record.suffix = props.record.suffix.split(",");
+        if (suffix.length) {
+            props.record.suffix = suffix.split(",");
         }
         return;
     }

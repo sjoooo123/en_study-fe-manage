@@ -259,7 +259,6 @@ const handleAdd = () => {
     currentRecord.value = {
         pieroot: "",
         translation: "",
-        chainInfo: [],
         category: "",
         note: "",
         level: "",
@@ -271,17 +270,6 @@ const handleEdit = (index: number, row: pierootType) => {
     currentRecord.value = {
         ...row,
         vary: row.vary?.split(","),
-        chainInfo:
-            row.chainInfo?.indexOf("[") === 0
-                ? JSON.parse(row.chainInfo)
-                : [
-                    //   {
-                    //       word: '',
-                    //       translation: "",
-                    //       type: '',
-                    //       des: ''
-                    //   },
-                  ],
     };
 
     modalType.value = "edit";

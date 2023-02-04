@@ -21,6 +21,7 @@
         width="50%"
         draggable
         :close-on-click-modal="false"
+        append-to-body
     >
         <el-form
             ref="ruleFormRef"
@@ -53,9 +54,6 @@
                         :value="item.id"
                     />
                 </el-select>
-            </el-form-item>
-            <el-form-item label="词源链">
-                <ChainList :list="record.chainInfo" />
             </el-form-item>
             <el-form-item label="语言类型">
                 <el-select
@@ -125,7 +123,7 @@ import {
     langTypeOptions,
     varyOptions,
 } from "../../utils/options";
-import ChainList from "../../components/ChainList.vue";
+import ChainListPie from "../../components/ChainListPie.vue";
 
 // -1、类型
 interface Props {
@@ -157,18 +155,11 @@ const excuteAddOrEdit = async () => {
     if (props.record.vary instanceof Array) {
         props.record.vary = props.record.vary.join(",");
     }
-    // 处理词源链
-    if (props.record.chainInfo instanceof Array) {
-        props.record.chainInfo = JSON.stringify(props.record.chainInfo);
-    }
 
     const res = await serviceFun(props.record);
     if (res.data.fail) {
         if (props.record.vary.length) {
             props.record.vary = props.record.vary.split(",");
-        }
-        if (props.record.chainInfo.indexOf("[") === 0) {
-            props.record.chainInfo = JSON.parse(props.record.chainInfo);
         }
         return;
     }

@@ -7,21 +7,35 @@
         size="mini"
         border
     >
-        <el-table-column prop="pie" label="词源">
+        <el-table-column prop="word" label="单词" width="100">
+            <template #default="scope">
+                <el-input v-model="scope.row.word" />
+            </template>
+        </el-table-column>
+        <el-table-column prop="translation" label="词义" width="140">
+            <template #default="scope">
+                <el-input v-model="scope.row.translation" />
+            </template>
+        </el-table-column>
+        <el-table-column prop="type" label="语言类型" width="160">
             <template #default="scope">
                 <el-select
-                    v-model="scope.row.pie"
+                    v-model="scope.row.type"
                     placeholder="请选择"
                     style="width: 100%"
-                    filterable
                 >
                     <el-option
-                        v-for="item in pieroots"
-                        :key="item.id"
-                        :label="getSourceName(item)"
-                        :value="'' + item.id"
+                        v-for="item in langTypeOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
                     />
                 </el-select>
+            </template>
+        </el-table-column>
+        <el-table-column prop="des" label="描述">
+            <template #default="scope">
+                <el-input v-model="scope.row.des" />
             </template>
         </el-table-column>
         <el-table-column label="操作" width="150">
@@ -49,83 +63,38 @@
             </template>
         </el-table-column>
     </el-table>
-    <el-button class="mt-4" style="width: 60%" @click="onAddItem"
-        >新增项</el-button
+    <el-button class="mt-4" style="width: 100%" @click="onAddItem"
+        >新增</el-button
     >
-    <el-button class="mt-4" style="width: 30%" @click="onAddSource"
-        >新增词源</el-button
-    >
-    <!-- 新增词源弹窗 -->
-    <ModalEdit
-        ref="addSourceRef"
-        type="add"
-        :record="currentRecord"
-        @fresh="getPieAll"
-        :category="categoryPieroot"
-    />
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
-import { getSourceName } from "../utils/common";
-import ModalEdit from "../pages/Pieroot/modalEdit.vue";
+import {
+    langTypeOptions,
+} from "../utils/options";
 export default {
-    name: "ChainList",
+    name: "ChainListPie",
     props: {
         list: Array,
     },
-    components:{
-        ModalEdit,
-    },
     data() {
         return {
-            currentRecord: {
-                pieroot: "",
-                translation: "",
-                category: "",
-                note: "",
-                level: "",
-            }
+            langTypeOptions
         };
     },
-    computed: {
-        ...mapGetters({
-            category: 'category/category',
-            pieroots: 'pieroot/all',
-        }),
-        categoryPieroot() {
-            return this.category.list.filter(item => item.type === "pieroot")
-        }
-    },
-    mounted() {
-        this.getPieAll();
-    },
     methods: {
-        ...mapActions({
-            getPieAll: 'pieroot/getAll'
-        }),
-        getSourceName(item){
-            return getSourceName(item);
-        },
         addList() {
             this.list.push({
-                pie: '',
+                word: '',
+                translation: "",
+                type: '',
+                des: ''
             });
         },
-        // 新增项
+        // 新增
         onAddItem() {
             this.addList();
-        },
-        // 新增词源
-        onAddSource() {
-            this.currentRecord = {
-                pieroot: "",
-                translation: "",
-                category: "",
-                note: "",
-                level: "",
-            };
-            this.$refs.addSourceRef.visible = true;
+            console.log(this.list, this.langTypeOptions)
         },
         // 移动顺序
         changeIndex(index, offset) {
@@ -138,7 +107,7 @@ export default {
         // 删除当前行
         deleteRow(index) {
             this.list.splice(index, 1);
-        }
+        },
     },
 };
 </script>

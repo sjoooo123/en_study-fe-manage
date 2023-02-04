@@ -70,7 +70,10 @@
             "
         >
             <template #default="scope">
-                <span>{{ getPieName(scope.row.pie) }}</span>
+                <span v-if="scope.row.pie" v-for="(item,index) in scope.row.pie.split(',')" :key="item">
+                    <span v-if="index>0">🡄</span>
+                    <el-tag>{{ getPieName(item) }}</el-tag>
+                </span>
             </template>
         </el-table-column>
         <el-table-column prop="translation" label="词义" />
@@ -283,8 +286,8 @@ const filtersVary = computed(() => {
 
 // 2、辅助方法
 const getPieName = (value: string) => {
-    const a = pieroots.value.find((item) => item.id === value);
-    return a?.pieroot || "";
+    const a = pieroots.value.find((item: pierootType) => item.id === +value);
+    return a ? getSourceName(a) : "";
 };
 const getCategoryPrefixOptionsLabel = (value: string) => {
     const a = categoryWordroot.value.find(
@@ -298,10 +301,7 @@ const indexMethod = (index: number) => {
 
 // 3、异步
 const queryPIEAll = async () => {
-    const res = await PierootService.queryAll();
-    if (res.data.fail) return;
-
-    pieroots.value = res.data.result.list;
+    store.dispatch("pieroot/getAll");
 };
 const queryList = async () => {
     loading.value = true;
@@ -382,6 +382,7 @@ const handleEdit = (index: number, row: wordrootType) => {
         ...row,
         vary: row.vary?.split(","),
         category: row.category?.split(","),
+        pie: row.pie?.split(",").filter((d) => d.length).map(item=>({pie: item})) || [],
         example:
             row.example?.indexOf("[") === 0
                 ? JSON.parse(row.example)
@@ -425,6 +426,16 @@ watch(
 watch(filters, (_n, _o) => {
     queryList();
 });
+watch(
+    () => store.state.pieroot.all,
+    (n, _o) => {
+        pieroots.value = n;
+    },
+    {
+        immediate: true,
+    }
+);
+
 onMounted(() => {
     queryPIEAll();
     queryList();

@@ -84,13 +84,10 @@
             "
         >
             <template #default="scope">
-                <el-tag
-                    style="margin: 5px"
-                    v-if="scope.row.pie"
-                    v-for="item in scope.row.pie.split(',')"
-                    :key="item"
-                    >{{ getPieName(item) }}</el-tag
-                >
+                <span v-if="scope.row.pie" v-for="(item,index) in scope.row.pie.split(',')" :key="item">
+                    <span v-if="index>0">🡄</span>
+                    <el-tag>{{ getPieName(item) }}</el-tag>
+                </span>
             </template>
         </el-table-column>
         <el-table-column
@@ -228,7 +225,6 @@
         :record="currentRecord"
         @fresh="queryList"
         :category="categoryWord"
-        :pieroots="pieroots"
         :wordroots="wordroots"
         :words="words"
         :prefixes="prefixes"
@@ -260,7 +256,7 @@ import { getSourceName } from "../../utils/common";
 const store = useStore();
 const categoryWord = ref([]);
 
-// 1.、属性
+// 1、属性
 const loading = ref(false);
 const currentRecord = ref({});
 const exact = ref(false);
@@ -314,11 +310,8 @@ const getfrequencyOptionsLabel = (value: string) => {
 };
 
 // 3、异步
-const queryPierootAll = async () => {
-    const res = await PierootService.queryAll();
-    if (res.data.fail) return;
-
-    pieroots.value = res.data.result.list;
+const queryPierootAll = () => {
+    store.dispatch("pieroot/getAll");
 };
 const queryWordrootAll = async () => {
     const res = await WordrootService.queryAll();
@@ -409,7 +402,7 @@ const handleEdit = (index: number, row: wordType) => {
     // 包含词根，包含前缀，包含后缀
     currentRecord.value = {
         ...row,
-        pie: row.pie?.split(",").filter((d) => d.length),
+        pie: row.pie?.split(",").filter((d) => d.length).map(item=>({pie: item})) || [],
         root: row.root?.split(",").filter((d) => d.length),
         simWord: row.simWord?.split(",").filter((d) => d.length),
         prefix: row.prefix?.split(",").filter((d) => d.length),
@@ -449,6 +442,16 @@ watch(
 watch(filters, (_n, _o) => {
     queryList();
 });
+watch(
+    () => store.state.pieroot.all,
+    (n, _o) => {
+        pieroots.value = n;
+    },
+    {
+        immediate: true,
+    }
+);
+
 onMounted(() => {
     fetchAll();
     queryList();

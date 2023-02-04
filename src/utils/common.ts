@@ -1,4 +1,5 @@
 import { pierootType } from "../api/pieroot";
+import { langTypeOptions } from './options';
 
 // 展示示例
 export const getExample = (example: string) => {
@@ -30,17 +31,10 @@ export const getExample = (example: string) => {
 
 // 展示词源名称
 export const getSourceName = (row: pierootType) => {
-    const {pieroot, translation, chainInfo} = row;
-    const chainList =
-        chainInfo?.indexOf("[") === 0
-            ? JSON.parse(chainInfo)
-            : [];
+    const {pieroot, translation, type} = row;
+    const typeMes = langTypeOptions.find(item=>item.value===type)?.label || '未知语言';
     let resultMes = pieroot.indexOf('-')>0 ? pieroot : pieroot + '-' + translation?.replace(/\，|\、|\；|\。/g,',').split(',')[0];
-    chainList.forEach((item, _index) => {
-        // 词义，只截取第一个
-        const transMes = item.translation.replace(/\，|\、|\；|\。/g,',').split(',')[0]
-        resultMes += '🡄' + item.word + '-' + transMes;
-    });
+    resultMes = '(' + typeMes + ')' + resultMes;
 
     return resultMes;
 };
