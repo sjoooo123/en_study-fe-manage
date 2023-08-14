@@ -60,6 +60,7 @@
                     v-model="record.type"
                     placeholder="请选择"
                     style="width: 100%"
+                    filterable
                 >
                     <el-option
                         v-for="item in langTypeOptions"
@@ -197,7 +198,7 @@ defineExpose({
 </script>
 <style lang="less" scoped>
 .demo-record {
-    height: 50vh;
+    height: 60vh;
     overflow: auto;
 }
 </style>

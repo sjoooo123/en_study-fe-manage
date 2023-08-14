@@ -30,7 +30,7 @@ export const langTypeOptions = [
     { label: "意大利语", value: "ITALY" },
     { label: "爱尔兰语", value: "Irish" },
     { label: "盖尔族语", value: "Gaelic" },
-    { label: "中古荷兰语", value: "Dutch" },
+    { label: "荷兰语", value: "Dutch" },
     { label: "德语", value: "German" },
     { label: "希伯来语", value: "Hebrew" },
     { label: "阿拉伯语", value: "Arabic" },
@@ -41,7 +41,24 @@ export const langTypeOptions = [
     { label: "波斯语", value: "Persian" },
     { label: "法兰克语", value: "Frankish"},
     { label: "撒克逊语", value: "Saxon"},
-    { label: "意第绪语", value: "Yiddish"}
+    { label: "意第绪语", value: "Yiddish"},
+    { label: "凯尔特语", value: "Celtic"},
+    { label: "葡萄牙语", value: "Portuguese"},
+    { label: "伊朗语", value: "Iranian"},
+    { label: "苏格兰语", value: "Scottish"},
+    { label: "盎格鲁-诺曼", value: "Anglo-Norman"},
+    { label: "丹麦", value: "Danish"},
+    { label: "汤加", value: "Tongan"},
+    { label: "高卢语", value: "Gaulish"},
+    { label: "土耳其语", value: "Turkish"},
+    { label: "爱斯基摩语", value: "Eskimo"},
+    { label: "匈牙利语", value: "Hungarian"},
+    { label: "瑞典语", value: "Swedish"},
+    { label: "泰米尔语", value: "Tamil"},
+    { label: "海地语", value: "Haiti"},
+    { label: "巴斯克语", value: "Basque"},
+    { label: "纳瓦特尔语", value: "Nahuatl"},
+    
 ];
 
 // 音变规律

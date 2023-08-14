@@ -353,7 +353,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         wordroot: "",
-        pie: "",
+        pie: [],
         translation: "",
         example: [],
         category: "",

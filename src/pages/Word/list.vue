@@ -394,6 +394,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         grade: "初中",
+        pie: [],
     };
     modalType.value = "add";
     editRef.value.visible = true;

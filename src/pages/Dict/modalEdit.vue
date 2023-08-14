@@ -163,7 +163,7 @@ defineExpose({
 </script>
 <style lang="less" scoped>
 .demo-record {
-	height: 50vh;
+	height: 60vh;
 	overflow: auto;
 }
 </style>

@@ -52,7 +52,7 @@
     <el-button class="mt-4" style="width: 60%" @click="onAddItem"
         >新增项</el-button
     >
-    <el-button class="mt-4" style="width: 30%" @click="onAddSource"
+    <el-button class="mt-4" style="width: 35%; margin-left: 5%" @click="onAddSource"
         >新增词源</el-button
     >
     <!-- 新增词源弹窗 -->
