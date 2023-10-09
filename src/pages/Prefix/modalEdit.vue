@@ -184,25 +184,20 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? PrefixService.add : PrefixService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
+    const _record = JSON.parse(JSON.stringify(props.record)); // 复制
+    const { category, example} = _record;
+
     // 处理分类数组为字符串
-    if (props.record.category instanceof Array) {
-        props.record.category = props.record.category.join(",");
+    if (category instanceof Array) {
+        _record.category = category.join(",");
     }
     // 处理示例
-    if (props.record.example instanceof Array) {
-        props.record.example = JSON.stringify(props.record.example);
+    if (example instanceof Array) {
+        _record.example = JSON.stringify(example);
     }
 
-    const res = await serviceFun(props.record);
-    if (res.data.fail) {
-        if (props.record.category.length) {
-            props.record.category = props.record.category.split(",");
-        }
-        if (props.record.example.indexOf("[") === 0) {
-            props.record.example = JSON.parse(props.record.example);
-        }
-        return;
-    }
+    const res = await serviceFun(_record);
+    if (res.data.fail) return;
 
     ElMessage.success(successMes);
     visible.value = false;

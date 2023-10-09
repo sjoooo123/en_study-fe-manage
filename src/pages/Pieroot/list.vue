@@ -71,9 +71,13 @@
             "
         >
             <template #default="scope">
-                <span>{{
-                    getCategoryPrefixOptionsLabel(scope.row.category)
-                }}</span>
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.category"
+                    v-for="item in scope.row.category.split(',')"
+                    :key="item"
+                    >{{ getCategoryPierootOptionsLabel(item) }}</el-tag
+                >
             </template>
         </el-table-column>
         <el-table-column
@@ -202,9 +206,9 @@ const filtersVary = computed(() => {
 });
 
 // 2、辅助方法
-const getCategoryPrefixOptionsLabel = (value: string) => {
+const getCategoryPierootOptionsLabel = (value: string) => {
     const a = categoryPieroot.value.find(
-        (item: categoryType) => item.id === value
+        (item: categoryType) => item.id === +value
     );
     return a?.name || "";
 };
@@ -270,6 +274,7 @@ const handleEdit = (index: number, row: pierootType) => {
     currentRecord.value = {
         ...row,
         vary: row.vary?.split(","),
+        category: row.category?.split(","),
     };
 
     modalType.value = "edit";
@@ -296,7 +301,7 @@ watch(
     () => store.state.category.category.list,
     (n, _o) => {
         categoryPieroot.value = n.filter(
-            (item: categoryType) => item.type === "pieroot"
+            (item: categoryType) => item.type === "wordroot"
         );
     },
     {

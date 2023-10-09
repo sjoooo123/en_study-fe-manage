@@ -59,6 +59,7 @@ const categoryWord = ref([]);
 watch(
     () => store.state.category.category.tree,
     (n, _o) => {
+        console.log(n)
         categoryPieroot.value = n.filter(
             (item: categoryType) => item.type === "pieroot"
         );

@@ -46,12 +46,13 @@
                     v-model="record.category"
                     placeholder="请选择"
                     style="width: 100%"
+                    multiple
                 >
                     <el-option
                         v-for="item in category"
                         :key="item.id"
                         :label="item.name"
-                        :value="item.id"
+                        :value="'' + item.id"
                     />
                 </el-select>
             </el-form-item>
@@ -152,18 +153,20 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? PierootService.add : PierootService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
+    const _record = JSON.parse(JSON.stringify(props.record)); // 复制
+    const { category, vary } = _record;
+
     // 处理音变规律数组为字符串
-    if (props.record.vary instanceof Array) {
-        props.record.vary = props.record.vary.join(",");
+    if (vary instanceof Array) {
+        _record.vary = vary.join(",");
+    }
+    // 处理分类数组为字符串
+    if (category instanceof Array) {
+        _record.category = category.join(",");
     }
 
-    const res = await serviceFun(props.record);
-    if (res.data.fail) {
-        if (props.record.vary.length) {
-            props.record.vary = props.record.vary.split(",");
-        }
-        return;
-    }
+    const res = await serviceFun(_record);
+    if (res.data.fail) return;
 
     ElMessage.success(successMes);
     visible.value = false;

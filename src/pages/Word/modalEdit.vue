@@ -30,7 +30,7 @@
             <el-form-item label="音标" prop="phonetic">
                 <el-input v-model="record.phonetic" />
             </el-form-item>
-            <el-form-item label="词义">
+            <el-form-item label="词义" prop="translation">
                 <el-input
                     v-model="record.translation"
                     type="textarea"
@@ -42,12 +42,13 @@
                     v-model="record.category"
                     placeholder="请选择"
                     style="width: 100%"
+                    multiple
                 >
                     <el-option
                         v-for="item in category"
                         :key="item.id"
                         :label="item.name"
-                        :value="item.id"
+                        :value="'' + item.id"
                     />
                 </el-select>
             </el-form-item>
@@ -95,7 +96,7 @@
                     filterable
                 >
                     <el-option
-                        v-for="item in words"
+                        v-for="item in filterMethod"
                         :key="item.id"
                         :label="item.word + '（' + item.translation + '）'"
                         :value="'' + item.id"
@@ -189,7 +190,7 @@ interface Props {
 }
 
 // 0、父组件相关
-const emit = defineEmits(["fresh"]); // 声明触发事件
+const emit = defineEmits(["fresh", "update"]); // 声明触发事件
 const props = defineProps<Props>();
 
 // 1、属性
@@ -199,6 +200,7 @@ const visible = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
     word: [{ required: true, message: "词根必填", trigger: "blur" }],
+    translation: [{ required: true, message: "词义必填", trigger: "blur" }],
 });
 
 // 2、辅助方法
@@ -220,11 +222,12 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? WordService.add : WordService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
-    const {pie, root, simWord, prefix, suffix} = props.record;
+    const _record = JSON.parse(JSON.stringify(props.record)); // 复制
+    const {pie, root, simWord, prefix, suffix, category} = _record;
 
     // 处理包含pie数组为字符串
     if (pie instanceof Array) {
-        props.record.pie= pie.map(item=>item.pie).join(",");
+        _record.pie= pie.map(item=>item.pie).join(",");
         // 修改词源标识
         if(pie[0]) {
             await  PierootService.setIsRoot({id: +pie[0].pie, isRoot: 1});
@@ -232,45 +235,32 @@ const excuteAddOrEdit = async () => {
     }
     // 处理包含词根数组为字符串
     if (root instanceof Array) {
-        props.record.root = root.join(",");
+        _record.root = root.join(",");
     }
     // 处理包含简单词数组为字符串
     if (simWord instanceof Array) {
-        props.record.simWord = simWord.join(",");
+        _record.simWord = simWord.join(",");
     }
     // 处理包含前缀数组为字符串
     if (prefix instanceof Array) {
-        props.record.prefix = prefix.join(",");
+        _record.prefix = prefix.join(",");
     }
     // 处理包含后缀数组为字符串
     if (suffix instanceof Array) {
-        props.record.suffix = suffix.join(",");
+        _record.suffix = suffix.join(",");
+    }
+    // 处理分类数组为字符串
+    if (category instanceof Array) {
+        _record.category = category.join(",");
     }
 
-    const res = await serviceFun(props.record);
-    if (res.data.fail) {
-        if (pie.length) {
-            props.record.pie= pie.split(",").map(item=>({pie: item}));
-        }
-        if (root.length) {
-            props.record.root = root.split(",");
-        }
-        if (simWord.length) {
-            props.record.simWord = simWord.split(",");
-        }
-        if (prefix.length) {
-            props.record.prefix = prefix.split(",");
-        }
-        if (suffix.length) {
-            props.record.suffix = suffix.split(",");
-        }
-        return;
-    }
+    const res = await serviceFun(_record);
+    if (res.data.fail) return;
 
     ElMessage.success(successMes);
     visible.value = false;
     // 父级刷新
-    emit("fresh");
+    props.type === "add" ? emit("fresh") : emit("update", _record);
 };
 
 // 4、交互

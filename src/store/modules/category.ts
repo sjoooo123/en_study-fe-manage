@@ -19,8 +19,8 @@ actions = {
 		const addTitleToTreeList = (list: categoryType[]) => {
 			list.forEach((item: categoryType) => {
 				item.title = item.note
-					? item.name + '__：' + item.note
-					: item.name
+					? '(' + item.sort + ')' + item.name + '__：' + item.note
+					: '(' + item.sort + ')' + item.name
 				if (item.children && item.children.length) {
 					addTitleToTreeList(item.children)
 				}

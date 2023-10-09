@@ -42,11 +42,7 @@
                     type="textarea"
                     autosize
                 />
-            </el-form-item>
-            <el-form-item label="示例">
-                <!--<el-input v-model="record.example" type="textarea" autosize />-->
-                <FormList :list="record.example" />
-            </el-form-item>
+            </el-form-item>            
             <el-form-item label="所属分类">
                 <el-select
                     v-model="record.category"
@@ -61,6 +57,10 @@
                         :value="'' + item.id"
                     />
                 </el-select>
+            </el-form-item>
+            <el-form-item label="示例">
+                <!--<el-input v-model="record.example" type="textarea" autosize />-->
+                <FormList :list="record.example" />
             </el-form-item>
             <el-form-item label="频率">
                 <el-select
@@ -199,11 +199,12 @@ const excuteAddOrEdit = async () => {
         props.type === "add" ? WordrootService.add : WordrootService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
-    const {pie, category, vary, example} = props.record;
+    const _record = JSON.parse(JSON.stringify(props.record)); // 复制
+    const {pie, category, vary, example} = _record;
 
     // 处理包含pie数组为字符串
     if (pie instanceof Array) {
-        props.record.pie= pie.map(item=>item.pie).join(",");
+        _record.pie= pie.map(item=>item.pie).join(",");
         // 修改词源标识
         if(pie[0]) {
             await  PierootService.setIsRoot({id: +pie[0].pie, isRoot: 1});
@@ -211,33 +212,19 @@ const excuteAddOrEdit = async () => {
     }
     // 处理分类数组为字符串
     if (category instanceof Array) {
-        props.record.category = category.join(",");
+        _record.category = category.join(",");
     }
     // 处理音变规律数组为字符串
     if (vary instanceof Array) {
-        props.record.vary = vary.join(",");
+        _record.vary = vary.join(",");
     }
     // 处理示例
     if (example instanceof Array) {
-        props.record.example = JSON.stringify(example);
+        _record.example = JSON.stringify(example);
     }
 
-    const res = await serviceFun(props.record);
-    if (res.data.fail) {
-        if (pie.length) {
-            props.record.pie= pie.split(",").map(item=>({pie: item}));
-        }
-        if (category.length) {
-            props.record.category = category.split(",");
-        }
-        if (vary.length) {
-            props.record.vary = vary.split(",");
-        }
-        if (example.indexOf("[") === 0) {
-            props.record.example = JSON.parse(example);
-        }
-        return;
-    }
+    const res = await serviceFun(_record);
+    if (res.data.fail) return;
 
     ElMessage.success(successMes);
     visible.value = false;

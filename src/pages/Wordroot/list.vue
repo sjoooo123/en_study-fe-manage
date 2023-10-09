@@ -79,7 +79,7 @@
         <el-table-column prop="translation" label="词义" />
         <el-table-column prop="example" label="示例">
             <template #default="scope">
-                <span>{{ getExample(scope.row.example) }}</span>
+                <span style="white-space: nowrap;">{{ getExample(scope.row.example) }}</span>
             </template>
         </el-table-column>
         <el-table-column
@@ -93,18 +93,13 @@
                 }))
             "
         >
-            <!--<template #default="scope">
-                <span>{{
-                    getCategoryPrefixOptionsLabel(scope.row.category)
-                }}</span>
-            </template> -->
             <template #default="scope">
                 <el-tag
                     style="margin: 5px"
                     v-if="scope.row.category"
                     v-for="item in scope.row.category.split(',')"
                     :key="item"
-                    >{{ getCategoryPrefixOptionsLabel(item) }}</el-tag
+                    >{{ getCategoryWordrootOptionsLabel(item) }}</el-tag
                 >
             </template>
         </el-table-column>
@@ -188,7 +183,11 @@
                 <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
             </template>
         </el-table-column>
-        <el-table-column prop="note" label="备注" />
+        <el-table-column prop="note" label="备注">
+            <template #default="scope">
+                <span style="white-space: nowrap;">{{scope.row.note}}</span>
+            </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
                 <el-button
@@ -289,7 +288,7 @@ const getPieName = (value: string) => {
     const a = pieroots.value.find((item: pierootType) => item.id === +value);
     return a ? getSourceName(a) : "";
 };
-const getCategoryPrefixOptionsLabel = (value: string) => {
+const getCategoryWordrootOptionsLabel = (value: string) => {
     const a = categoryWordroot.value.find(
         (item: categoryType) => item.id === +value
     );

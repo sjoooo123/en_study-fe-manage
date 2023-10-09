@@ -46,7 +46,6 @@
         v-loading="loading"
         class="mt15"
         :data="tableData"
-        border
         style="width: 100%"
         height="450"
         @filter-change="filterChange"
@@ -67,9 +66,13 @@
             "
         >
             <template #default="scope">
-                <span>{{
-                    getCategoryWordOptionsLabel(scope.row.category)
-                }}</span>
+                <el-tag
+                    style="margin: 5px"
+                    v-if="scope.row.category"
+                    v-for="item in scope.row.category.split(',')"
+                    :key="item"
+                    >{{ getCategoryWordOptionsLabel(item) }}</el-tag
+                >
             </template>
         </el-table-column>
         <el-table-column
@@ -219,17 +222,20 @@
         />
     </div>
     <!-- 新增编辑弹窗 -->
-    <ModalEdit
-        ref="editRef"
-        :type="modalType"
-        :record="currentRecord"
-        @fresh="queryList"
-        :category="categoryWord"
-        :wordroots="wordroots"
-        :words="words"
-        :prefixes="prefixes"
-        :suffixes="suffixes"
-    />
+    <KeepAlive>
+        <ModalEdit
+            ref="editRef"
+            :type="modalType"
+            :record="currentRecord"
+            :category="categoryWord"
+            :wordroots="wordroots"
+            :words="words"
+            :prefixes="prefixes"
+            :suffixes="suffixes"
+            @fresh="queryList"
+            @update="updateTableDataByRecord"
+        />
+    </KeepAlive>
 </template>
 
 <script lang="ts" setup>
@@ -244,13 +250,13 @@ import { SuffixService, suffixType } from "../../api/suffix";
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
-import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
     gradeOptions,
     getOptionsName,
 } from "../../utils/options";
 import { getSourceName } from "../../utils/common";
+import { categoryType } from "../../api/category";
 
 // 0、父组件相关
 const store = useStore();
@@ -280,7 +286,7 @@ const indexMethod = (index: number) => {
 };
 const getCategoryWordOptionsLabel = (value: number) => {
     const a = categoryWord.value.find(
-        (item: categoryType) => item.id === value
+        (item: categoryType) => item.id === +value
     );
     return a?.name || "";
 };
@@ -307,6 +313,10 @@ const getSuffixOptionsLabel = (value: string) => {
 const getfrequencyOptionsLabel = (value: string) => {
     const a = frequencyOptions.find((item) => item.value === value);
     return a?.label || "";
+};
+const updateTableDataByRecord = (record: wordType) => {
+    const _index = tableData.value.findIndex(item => item.id ===record.id);
+    tableData.value[_index] = record;
 };
 
 // 3、异步
@@ -408,9 +418,10 @@ const handleEdit = (index: number, row: wordType) => {
         simWord: row.simWord?.split(",").filter((d) => d.length),
         prefix: row.prefix?.split(",").filter((d) => d.length),
         suffix: row.suffix?.split(",").filter((d) => d.length),
+        category: row.category?.split(","),
     };
 
-    fetchAll();
+    // fetchAll();
 
     modalType.value = "edit";
     editRef.value.visible = true;
