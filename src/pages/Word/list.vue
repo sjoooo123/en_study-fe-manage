@@ -77,7 +77,7 @@
         </el-table-column>
         <el-table-column
             prop="pie"
-            label="词源链"
+            label="词源"
             column-key="pie"
             :filters="
                 pieroots?.map((item) => ({
@@ -135,7 +135,7 @@
             column-key="root"
             :filters="
                 wordroots.map((item) => ({
-                    text: item.root + '（' + item.translation + '）',
+                    text: item.wordroot + '（' + item.translation + '）',
                     value: item.id,
                 }))
             "
@@ -222,20 +222,22 @@
         />
     </div>
     <!-- 新增编辑弹窗 -->
-    <KeepAlive>
-        <ModalEdit
-            ref="editRef"
-            :type="modalType"
-            :record="currentRecord"
-            :category="categoryWord"
-            :wordroots="wordroots"
-            :words="words"
-            :prefixes="prefixes"
-            :suffixes="suffixes"
-            @fresh="queryList"
-            @update="updateTableDataByRecord"
-        />
-    </KeepAlive>
+    <ModalEdit
+        v-if="modalType"
+        @close="()=>{
+            modalType = '';
+            queryPIEAll();
+        }"
+        :type="modalType"
+        :record="currentRecord"
+        :category="categoryWord"
+        :wordroots="wordroots"
+        :words="words"
+        :prefixes="prefixes"
+        :suffixes="suffixes"
+        @fresh="queryList"
+        @update="updateTableDataByRecord"
+    />
 </template>
 
 <script lang="ts" setup>
@@ -267,7 +269,6 @@ const loading = ref(false);
 const currentRecord = ref({});
 const exact = ref(false);
 const input = ref("");
-const editRef = ref(null);
 const modalType = ref("");
 const tableData = ref([]);
 const total = ref(0);
@@ -320,8 +321,11 @@ const updateTableDataByRecord = (record: wordType) => {
 };
 
 // 3、异步
-const queryPierootAll = () => {
-    store.dispatch("pieroot/getAll");
+const queryPIEAll = async () => {
+    const res = await PierootService.queryAll();
+    if (res.data.fail) return;
+
+    pieroots.value = res.data.result.list;
 };
 const queryWordrootAll = async () => {
     const res = await WordrootService.queryAll();
@@ -370,7 +374,7 @@ const excuteDelete = async (id) => {
     queryList();
 };
 const fetchAll = () => {
-    queryPierootAll();
+    queryPIEAll();
     queryWordrootAll();
     queryWordAll();
     queryPrefixAll();
@@ -407,7 +411,6 @@ const handleAdd = () => {
         pie: [],
     };
     modalType.value = "add";
-    editRef.value.visible = true;
 };
 const handleEdit = (index: number, row: wordType) => {
     // 包含词根，包含前缀，包含后缀
@@ -421,10 +424,7 @@ const handleEdit = (index: number, row: wordType) => {
         category: row.category?.split(","),
     };
 
-    // fetchAll();
-
     modalType.value = "edit";
-    editRef.value.visible = true;
 };
 const handleDelete = (index: number, row: wordType) => {
     ElMessageBox.confirm("确认删除？", "警告", {
@@ -454,15 +454,6 @@ watch(
 watch(filters, (_n, _o) => {
     queryList();
 });
-watch(
-    () => store.state.pieroot.all,
-    (n, _o) => {
-        pieroots.value = n;
-    },
-    {
-        immediate: true,
-    }
-);
 
 onMounted(() => {
     fetchAll();

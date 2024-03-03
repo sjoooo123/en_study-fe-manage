@@ -81,6 +81,24 @@
             </template>
         </el-table-column>
         <el-table-column
+            prop="pie"
+            label="词源"
+            column-key="pie"
+            :filters="
+                pieroots?.map((item) => ({
+                    text: getSourceName(item),
+                    value: item.id,
+                }))
+            "
+        >
+            <template #default="scope">
+                <span v-if="scope.row.pie" v-for="(item,index) in scope.row.pie.split(',')" :key="item">
+                    <span v-if="index>0">🡄</span>
+                    <el-tag>{{ getPieName(item) }}</el-tag>
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column
             prop="type"
             label="语言类型"
             column-key="type"
@@ -183,6 +201,7 @@ const loading = ref(false);
 const currentRecord = ref({});
 const exact = ref(false);
 const input = ref("");
+const pieroots = ref([]);
 const editRef = ref(null);
 const modalType = ref("");
 const tableData = ref([]);
@@ -212,11 +231,18 @@ const getCategoryPierootOptionsLabel = (value: string) => {
     );
     return a?.name || "";
 };
+const getPieName = (value: string) => {
+    const a = pieroots.value.find((item: pierootType) => item.id === +value);
+    return a ? getSourceName(a) : "";
+};
 const indexMethod = (index: number) => {
     return index + 1;
 };
 
 // 3、异步
+const queryPierootAll = () => {
+    store.dispatch("pieroot/getAll");
+};
 const queryList = async () => {
     loading.value = true;
     const res = await PierootService.queryList({
@@ -241,6 +267,9 @@ const excuteDelete = async (id) => {
 };
 
 // 4、交互
+const fetchAll = () => {
+    queryPierootAll();
+}
 const filterChange = (f: any) => {
     // 去除空的过滤条件
     for (let k in f) {
@@ -262,6 +291,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         pieroot: "",
+        pie: [],
         translation: "",
         category: "",
         note: "",
@@ -273,6 +303,7 @@ const handleAdd = () => {
 const handleEdit = (index: number, row: pierootType) => {
     currentRecord.value = {
         ...row,
+        pie: row.pie?.split(",").filter((d) => d.length).map(item=>({pie: item})) || [],
         vary: row.vary?.split(","),
         category: row.category?.split(","),
     };
@@ -311,7 +342,17 @@ watch(
 watch(filters, (_n, _o) => {
     queryList();
 });
+watch(
+    () => store.state.pieroot.all,
+    (n, _o) => {
+        pieroots.value = n;
+    },
+    {
+        immediate: true,
+    }
+);
 onMounted(() => {
+    fetchAll();
     queryList();
 });
 

@@ -50,9 +50,34 @@
 		连接字符，在词根词缀中添加（移除），但不会改变其意思的字符，主要有：
 	</h3>
 	<p>ee,fer,i,ia,m,o,u</p>
+	<div>
+		<el-button type="primary" @click="updateData(prefixData, 'prefix')">根据前缀修改</el-button>
+		<el-button type="primary" @click="updateData(wordrootData, 'wordroot')">根据词根修改</el-button>
+		<el-button type="primary" @click="updateData(wordData, 'word')">根据单词修改</el-button>
+	</div>
 </template>
-<script>
-export default {}
+<script lang="ts" setup>
+// 加载数据库文件
+import { ElMessage } from 'element-plus';
+import prefixData from './data/prefix.js';
+import wordrootData from './data/wordroot.js';
+import wordData from './data/word.js';
+
+const updateData = (data: any, tableName: string) => {
+	let sqlStr = '', sqlStrid = '';
+	data.RECORDS.forEach(item=>{
+		const pieList = item.pie.split(',').filter(d=>d.length).reverse();
+		for(let i=0, l = pieList.length; i < l - 1; i++) {
+			sqlStr += `update pieroot set pie = '${pieList[i+1]}' where id = ${pieList[i]};`
+		}
+		sqlStrid += `update ${tableName} set pie = '${pieList[0]}' where id = ${item.id};`
+	})
+
+	console.log(sqlStr)
+	console.log(sqlStrid)
+
+    ElMessage.success('生成成功');
+};
 </script>
 <style lang="less" scoped>
 i {

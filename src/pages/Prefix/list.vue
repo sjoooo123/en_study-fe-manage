@@ -55,17 +55,20 @@
         <el-table-column prop="affix" label="词缀" width="120" />
         <el-table-column
             prop="pie"
-            label="所属PIE词根"
+            label="词源"
             column-key="pie"
             :filters="
                 pieroots?.map((item) => ({
-                    text: item.pieroot,
+                    text: getSourceName(item),
                     value: item.id,
                 }))
             "
         >
             <template #default="scope">
-                <span>{{ getPieName(scope.row.pie) }}</span>
+                <span v-if="scope.row.pie" v-for="(item,index) in scope.row.pie.split(',')" :key="item">
+                    <span v-if="index>0">🡄</span>
+                    <el-tag>{{ getPieName(item) }}</el-tag>
+                </span>
             </template>
         </el-table-column>
         <el-table-column prop="translation" label="词义" />
@@ -144,21 +147,6 @@
                 <span>{{ getOptionsName(gradeOptions, scope.row.grade) }}</span>
             </template>
         </el-table-column>
-        <el-table-column
-            prop="level"
-            label="完善程度"
-            column-key="level"
-            :filters="
-                levelOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
-            </template>
-        </el-table-column>
         <el-table-column prop="note" label="备注" />
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
@@ -194,7 +182,11 @@
     </div>
     <!-- 新增编辑弹窗 -->
     <ModalEdit
-        ref="editRef"
+        v-if="modalType"
+        @close="()=>{
+            modalType = '';
+            queryPIEAll();
+        }"
         :type="modalType"
         :record="currentRecord"
         @fresh="queryList"
@@ -208,7 +200,7 @@
 import { Search } from "@element-plus/icons-vue";
 import ModalEdit from "./modalEdit.vue";
 import { PrefixService, prefixType } from "../../api/prefix"; // 引入接口
-import { PierootService } from "../../api/pieroot"; // 引入接口
+import { PierootService, pierootType } from "../../api/pieroot"; // 引入接口
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
@@ -217,10 +209,9 @@ import {
     frequencyOptions,
     sourceOptions,
     gradeOptions,
-    levelOptions,
     getOptionsName,
 } from "../../utils/options";
-import { getExample } from "../../utils/common";
+import { getExample, getSourceName } from "../../utils/common";
 
 // 0、父组件相关
 const store = useStore();
@@ -231,7 +222,6 @@ const loading = ref(false);
 const currentRecord = ref({});
 const exact = ref(false);
 const input = ref("");
-const editRef = ref(null);
 const modalType = ref("");
 const tableData = ref([]);
 const total = ref(0);
@@ -242,8 +232,8 @@ const pieroots = ref([]);
 
 // 2、辅助方法
 const getPieName = (value: string) => {
-    const a = pieroots.value.find((item) => item.id === value);
-    return a?.pieroot || "";
+    const a = pieroots.value.find((item: pierootType) => item.id === +value);
+    return a ? getSourceName(a) : "";
 };
 const indexMethod = (index: number) => {
     return index + 1;
@@ -312,7 +302,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         affix: "",
-        pie: "",
+        pie: [],
         translation: "",
         example: [],
         category: "",
@@ -322,7 +312,6 @@ const handleAdd = () => {
         level: "",
     };
     modalType.value = "add";
-    editRef.value.visible = true;
 };
 const handleEdit = (index: number, row: prefixType) => {
     // currentRecord.value = { ...row };
@@ -332,6 +321,7 @@ const handleEdit = (index: number, row: prefixType) => {
         ...row,
         // vary: row.vary?.split(","),
         category: row.category?.split(","),
+        pie: row.pie?.split(",").filter((d) => d.length).map(item=>({pie: item})) || [],
         example:
             row.example?.indexOf("[") === 0
                 ? JSON.parse(row.example)
@@ -346,7 +336,6 @@ const handleEdit = (index: number, row: prefixType) => {
     };
 
     modalType.value = "edit";
-    editRef.value.visible = true;
 };
 const handleDelete = (index: number, row: prefixType) => {
     ElMessageBox.confirm("确认删除？", "警告", {

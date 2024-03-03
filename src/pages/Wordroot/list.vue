@@ -60,7 +60,7 @@
         <el-table-column prop="wordroot" label="词根" width="120" />
         <el-table-column
             prop="pie"
-            label="词源链"
+            label="词源"
             column-key="pie"
             :filters="
                 pieroots?.map((item) => ({
@@ -168,21 +168,6 @@
                 <span>{{ getOptionsName(gradeOptions, scope.row.grade) }}</span>
             </template>
         </el-table-column>
-        <el-table-column
-            prop="level"
-            label="完善程度"
-            column-key="level"
-            :filters="
-                levelOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
-            </template>
-        </el-table-column>
         <el-table-column prop="note" label="备注">
             <template #default="scope">
                 <span style="white-space: nowrap;">{{scope.row.note}}</span>
@@ -244,7 +229,6 @@ import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
     sourceOptions,
-    levelOptions,
     gradeOptions,
     varyOptions,
     getOptionsName,

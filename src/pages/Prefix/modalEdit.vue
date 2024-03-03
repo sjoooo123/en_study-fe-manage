@@ -33,20 +33,8 @@
             <el-form-item label="词缀" prop="affix">
                 <el-input v-model="record.affix" />
             </el-form-item>
-            <el-form-item label="所属PIE词根">
-                <el-select
-                    v-model="record.pie"
-                    placeholder="请选择"
-                    style="width: 100%"
-                    filterable
-                >
-                    <el-option
-                        v-for="item in pieroots"
-                        :key="item.id"
-                        :label="item.pieroot"
-                        :value="item.id"
-                    />
-                </el-select>
+            <el-form-item label="词源">
+                <ChainList :list="record.pie"/>
             </el-form-item>
             <el-form-item label="词义">
                 <el-input
@@ -54,9 +42,6 @@
                     type="textarea"
                     autosize
                 />
-            </el-form-item>
-            <el-form-item label="示例">
-                <FormList :list="record.example" />
             </el-form-item>
             <el-form-item label="所属分类">
                 <el-select
@@ -72,6 +57,9 @@
                         :value="'' + item.id"
                     />
                 </el-select>
+            </el-form-item>
+            <el-form-item label="示例">
+                <FormList :list="record.example" />
             </el-form-item>
             <el-form-item label="频率">
                 <el-select
@@ -115,20 +103,6 @@
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="完善程度">
-                <el-select
-                    v-model="record.level"
-                    placeholder="请选择"
-                    style="width: 100%"
-                >
-                    <el-option
-                        v-for="item in levelOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                    />
-                </el-select>
-            </el-form-item>
             <el-form-item label="备注">
                 <el-input v-model="record.note" type="textarea" autosize />
             </el-form-item>
@@ -146,32 +120,32 @@
 
 <script lang="ts" setup>
 // -2、引用
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
 import { PrefixService, prefixType } from "../../api/prefix"; // 引入接口
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
-    levelOptions,
     gradeOptions,
     sourceOptions,
 } from "../../utils/options";
 import FormList from "../../components/FormList.vue";
+import ChainList from "../../components/ChainList.vue";
 
 // -1、类型
 interface Props {
     category: categoryType[];
     record: prefixType; // 表单项数据
     type: string; // 表单类型
-    pieroots: Array; // pie词根列表
+    pieroots: any[]; // pie词根列表
 }
 
 // 0、父组件相关
-const emit = defineEmits(["fresh"]); // 声明触发事件
+const emit = defineEmits(["close", "fresh"]); // 声明触发事件
 const props = defineProps<Props>();
 
 // 1、属性
-const visible = ref(false);
+const visible = ref(true);
 const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
     affix: [{ required: true, message: "词根必填", trigger: "blur" }],
@@ -185,8 +159,12 @@ const excuteAddOrEdit = async () => {
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
     const _record = JSON.parse(JSON.stringify(props.record)); // 复制
-    const { category, example} = _record;
+    const { pie, category, example} = _record;
 
+    // 处理包含pie数组为字符串
+    if (pie instanceof Array) {
+        _record.pie= pie.map(item=>item.pie).join(",");
+    }
     // 处理分类数组为字符串
     if (category instanceof Array) {
         _record.category = category.join(",");
@@ -224,11 +202,11 @@ const resetForm = (formEl: FormInstance | undefined) => {
 };
 
 // 5、生命周期
+watch(visible, (_n, _o) => {
+    !_n && emit("close");
+});
 
 // 6、对外
-defineExpose({
-    visible,
-});
 </script>
 <style lang="less" scoped>
 .demo-record {

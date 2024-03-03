@@ -41,6 +41,21 @@
                     autosize
                 />
             </el-form-item>
+            <el-form-item label="来源">
+                <el-select
+                    v-model="record.pie"
+                    placeholder="请选择"
+                    style="width: 100%"
+                    filterable
+                >
+                    <el-option
+                        v-for="item in pieroots"
+                        :key="item.id"
+                        :label="getSourceName(item)"
+                        :value="'' + item.id"
+                    />
+                </el-select>
+            </el-form-item>
             <el-form-item label="所属分类">
                 <el-select
                     v-model="record.category"
@@ -116,7 +131,7 @@
 
 <script lang="ts" setup>
 // -2、引用
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
 import { PierootService, pierootType } from "../../api/pieroot"; // 引入接口
 import { categoryType } from "../../api/category";
@@ -125,7 +140,8 @@ import {
     langTypeOptions,
     varyOptions,
 } from "../../utils/options";
-import ChainListPie from "../../components/ChainListPie.vue";
+import { getSourceName } from "../../utils/common";
+import { useStore } from "vuex";
 
 // -1、类型
 interface Props {
@@ -135,6 +151,7 @@ interface Props {
 }
 
 // 0、父组件相关
+const store = useStore();
 const emit = defineEmits(["fresh"]); // 声明触发事件
 const props = defineProps<Props>();
 
@@ -144,18 +161,26 @@ const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
     pieroot: [{ required: true, message: "词根必填", trigger: "blur" }],
 });
+const pieroots = ref([]);
 
 // 2、辅助方法
 
 // 3、异步
+const queryPierootAll = () => {
+    store.dispatch("pieroot/getAll");
+};
 const excuteAddOrEdit = async () => {
     const serviceFun =
         props.type === "add" ? PierootService.add : PierootService.edit;
     const successMes = props.type === "add" ? "新增成功！" : "修改成功！";
 
     const _record = JSON.parse(JSON.stringify(props.record)); // 复制
-    const { category, vary } = _record;
+    const { pie, category, vary } = _record;
 
+    // 处理包含pie数组为字符串
+    if (pie instanceof Array) {
+        _record.pie= pie.map(item=>item.pie).join(",");
+    }
     // 处理音变规律数组为字符串
     if (vary instanceof Array) {
         _record.vary = vary.join(",");
@@ -175,6 +200,9 @@ const excuteAddOrEdit = async () => {
 };
 
 // 4、交互
+const fetchAll = () => {
+    queryPierootAll();
+}
 const submitForm = (formEl: FormInstance | undefined) => {
     if (!formEl) return;
     formEl.validate((valid) => {
@@ -193,6 +221,18 @@ const resetForm = (formEl: FormInstance | undefined) => {
 };
 
 // 5、生命周期
+watch(
+    () => store.state.pieroot.all,
+    (n, _o) => {
+        pieroots.value = n;
+    },
+    {
+        immediate: true,
+    }
+);
+onMounted(() => {
+    fetchAll();
+});
 
 // 6、对外
 defineExpose({

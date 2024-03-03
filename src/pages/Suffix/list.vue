@@ -55,7 +55,7 @@
         <el-table-column prop="affix" label="词缀" width="120" />
         <el-table-column
             prop="pie"
-            label="所属PIE词根"
+            label="词源"
             column-key="pie"
             :filters="
                 pieroots?.map((item) => ({
@@ -144,21 +144,6 @@
                 <span>{{ getOptionsName(gradeOptions, scope.row.grade) }}</span>
             </template>
         </el-table-column>
-        <el-table-column
-            prop="level"
-            label="完善程度"
-            column-key="level"
-            :filters="
-                levelOptions.map((item) => ({
-                    text: item.label,
-                    value: item.value,
-                }))
-            "
-        >
-            <template #default="scope">
-                <span>{{ getOptionsName(levelOptions, scope.row.level) }}</span>
-            </template>
-        </el-table-column>
         <el-table-column prop="note" label="备注" />
         <el-table-column fixed="right" label="操作" width="180">
             <template #default="scope">
@@ -194,7 +179,11 @@
     </div>
     <!-- 新增编辑弹窗 -->
     <ModalEdit
-        ref="editRef"
+        v-if="modalType"
+        @close="()=>{
+            modalType = '';
+            queryPIEAll();
+        }"
         :type="modalType"
         :record="currentRecord"
         @fresh="queryList"
@@ -217,10 +206,9 @@ import {
     frequencyOptions,
     sourceOptions,
     gradeOptions,
-    levelOptions,
     getOptionsName,
 } from "../../utils/options";
-import { getExample } from "../../utils/common";
+import { getExample, getSourceName } from "../../utils/common";
 
 // 0、父组件相关
 const store = useStore();
@@ -231,7 +219,6 @@ const loading = ref(false);
 const currentRecord = ref({});
 const exact = ref(false);
 const input = ref("");
-const editRef = ref(null);
 const modalType = ref("");
 const tableData = ref([]);
 const total = ref(0);
@@ -242,8 +229,8 @@ const pieroots = ref([]);
 
 // 2、辅助方法
 const getPieName = (value: string) => {
-    const a = pieroots.value.find((item) => item.id === value);
-    return a?.pieroot || "";
+    const a = pieroots.value.find((item) => item.id === +value);
+    return a ? getSourceName(a) : "";
 };
 const indexMethod = (index: number) => {
     return index + 1;
@@ -312,7 +299,7 @@ const handleCurrentChange = (val: number) => {
 const handleAdd = () => {
     currentRecord.value = {
         affix: "",
-        pie: "",
+        pie: [],
         translation: "",
         example: [],
         category: "",
@@ -322,7 +309,6 @@ const handleAdd = () => {
         level: "",
     };
     modalType.value = "add";
-    editRef.value.visible = true;
 };
 const handleEdit = (index: number, row: suffixType) => {
     // 示例
@@ -330,6 +316,7 @@ const handleEdit = (index: number, row: suffixType) => {
         ...row,
         // vary: row.vary?.split(","),
         category: row.category?.split(","),
+        pie: row.pie?.split(",").filter((d) => d.length).map(item=>({pie: item})) || [],
         example:
             row.example?.indexOf("[") === 0
                 ? JSON.parse(row.example)
@@ -344,7 +331,6 @@ const handleEdit = (index: number, row: suffixType) => {
     };
 
     modalType.value = "edit";
-    editRef.value.visible = true;
 };
 const handleDelete = (index: number, row: suffixType) => {
     ElMessageBox.confirm("确认删除？", "警告", {

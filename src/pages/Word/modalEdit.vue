@@ -30,6 +30,9 @@
             <el-form-item label="音标" prop="phonetic">
                 <el-input v-model="record.phonetic" />
             </el-form-item>
+            <el-form-item label="词源">
+                <ChainList :list="record.pie"/>
+            </el-form-item>
             <el-form-item label="词义" prop="translation">
                 <el-input
                     v-model="record.translation"
@@ -51,9 +54,6 @@
                         :value="'' + item.id"
                     />
                 </el-select>
-            </el-form-item>
-            <el-form-item label="词源链">
-                <ChainList :list="record.pie"/>
             </el-form-item>
             <el-form-item label="包含前缀">
                 <el-select
@@ -88,7 +88,7 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="包含词基">
-                <el-select
+                <!-- <el-select
                     v-model="record.simWord"
                     placeholder="请选择"
                     style="width: 100%"
@@ -96,11 +96,29 @@
                     filterable
                 >
                     <el-option
-                        v-for="item in filterMethod"
+                        v-for="item in words"
                         :key="item.id"
                         :label="item.word + '（' + item.translation + '）'"
                         :value="'' + item.id"
                     />
+                </el-select> -->
+                <el-select
+                    v-model="record.simWord"
+                    multiple
+                    filterable
+                    remote
+                    reserve-keyword
+                    placeholder="请选择"
+                    :remote-method="filterMethod"
+                    :loading="loading"
+                    style="width: 100%"
+                >
+                    <el-option
+                        v-for="item in wordsOptions"
+                        :key="item.id"
+                        :label="item.word + '（' + item.translation + '）'"
+                        :value="'' + item.id"
+                        />
                 </el-select>
             </el-form-item>
             <el-form-item label="包含后缀">
@@ -167,7 +185,7 @@
 
 <script lang="ts" setup>
 // -2、引用
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
 import { WordService, wordType } from "../../api/word"; // 引入接口
 import { PierootService } from "../../api/pieroot";
@@ -190,13 +208,13 @@ interface Props {
 }
 
 // 0、父组件相关
-const emit = defineEmits(["fresh", "update"]); // 声明触发事件
+const emit = defineEmits(["close", "fresh", "update"]); // 声明触发事件
 const props = defineProps<Props>();
 
 // 1、属性
-const wordsOptionsMaxLength = 20;
-const wordsOptions = ref(props.words.slice(0, wordsOptionsMaxLength));
-const visible = ref(false);
+const wordsOptions = ref(props.record.simWord ? props.words.filter(word=>props.record.simWord.includes(''+word.id)) : []);
+const loading = ref(false);
+const visible = ref(true);
 const ruleFormRef = ref<FormInstance>();
 const rules = reactive({
     word: [{ required: true, message: "词根必填", trigger: "blur" }],
@@ -204,16 +222,21 @@ const rules = reactive({
 });
 
 // 2、辅助方法
-const filterMethod = (query) => {                                                        //query是输入的关键字
-    if(query == '')            
-        wordsOptions.value = props.words.slice(0, wordsOptionsMaxLength)
-    else{
-        let result = []                                                        //存储符合条件的下拉选项
-        props.words.forEach(val=>{
-            if(val.word.indexOf(query)!=-1 || val.translation.indexOf(query)!=-1) result.push(val)
-        })
-        wordsOptions.value = result.slice(0,wordsOptionsMaxLength)                                    //只取前10个
-    }
+//query是输入的关键字
+const filterMethod = (query) => {   
+    let result = props.record.simWord ? props.words.filter(word=>props.record.simWord.includes(''+word.id)) : []                                      
+    if(query) {
+        loading.value = true
+        setTimeout(() => {
+            loading.value = false
+            props.words.forEach(val=>{
+                if((val.word.indexOf(query)!=-1 || val.translation.indexOf(query)!=-1) && !props.record.simWord?.includes(''+val.id)) result.push(val)
+            })
+            wordsOptions.value = result.slice(0, 50) // 最多取50个
+        }, 2000)
+    } else {
+        wordsOptions.value = result
+    }    
 }
 
 // 3、异步
@@ -228,10 +251,6 @@ const excuteAddOrEdit = async () => {
     // 处理包含pie数组为字符串
     if (pie instanceof Array) {
         _record.pie= pie.map(item=>item.pie).join(",");
-        // 修改词源标识
-        if(pie[0]) {
-            await  PierootService.setIsRoot({id: +pie[0].pie, isRoot: 1});
-        }
     }
     // 处理包含词根数组为字符串
     if (root instanceof Array) {
@@ -282,11 +301,12 @@ const resetForm = (formEl: FormInstance | undefined) => {
 };
 
 // 5、生命周期
+watch(visible, (_n, _o) => {
+    !_n && emit("close");
+});
 
 // 6、对外
-defineExpose({
-    visible,
-});
+
 </script>
 <style lang="less" scoped>
 .demo-record {

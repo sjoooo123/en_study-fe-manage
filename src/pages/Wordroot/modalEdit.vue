@@ -33,7 +33,7 @@
             <el-form-item label="词跟" prop="wordroot">
                 <el-input v-model="record.wordroot" />
             </el-form-item>
-            <el-form-item label="词源链">
+            <el-form-item label="词源">
                 <ChainList :list="record.pie"/>
             </el-form-item>
             <el-form-item label="词义">
@@ -125,20 +125,6 @@
                     />
                 </el-select>
             </el-form-item>
-            <el-form-item label="完善程度">
-                <el-select
-                    v-model="record.level"
-                    placeholder="请选择"
-                    style="width: 100%"
-                >
-                    <el-option
-                        v-for="item in levelOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                    />
-                </el-select>
-            </el-form-item>
             <el-form-item label="备注">
                 <el-input v-model="record.note" type="textarea" autosize />
             </el-form-item>
@@ -163,7 +149,6 @@ import { WordrootService, wordrootType } from "../../api/wordroot"; // 引入接
 import { categoryType } from "../../api/category";
 import {
     frequencyOptions,
-    levelOptions,
     gradeOptions,
     sourceOptions,
     varyOptions,
@@ -205,10 +190,6 @@ const excuteAddOrEdit = async () => {
     // 处理包含pie数组为字符串
     if (pie instanceof Array) {
         _record.pie= pie.map(item=>item.pie).join(",");
-        // 修改词源标识
-        if(pie[0]) {
-            await  PierootService.setIsRoot({id: +pie[0].pie, isRoot: 1});
-        }
     }
     // 处理分类数组为字符串
     if (category instanceof Array) {

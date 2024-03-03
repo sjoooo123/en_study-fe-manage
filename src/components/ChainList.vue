@@ -49,7 +49,8 @@
             </template>
         </el-table-column>
     </el-table>
-    <el-button class="mt-4" style="width: 60%" @click="onAddItem"
+    <!-- <el-button class="mt-4" style="width: 60%" @click="onAddItem" :disabled="!multipleFlag && list.length>0" -->
+        <el-button class="mt-4" style="width: 60%" @click="onAddItem"
         >新增项</el-button
     >
     <el-button class="mt-4" style="width: 35%; margin-left: 5%" @click="onAddSource"
@@ -73,6 +74,7 @@ export default {
     name: "ChainList",
     props: {
         list: Array,
+        // multipleFlag: Boolean,
     },
     components:{
         ModalEdit,
@@ -94,7 +96,7 @@ export default {
             pieroots: 'pieroot/all',
         }),
         categoryPieroot() {
-            return this.category.list.filter(item => item.type === "pieroot")
+            return this.category.list.filter(item => item.type === "wordroot")
         }
     },
     mounted() {
